@@ -149,6 +149,7 @@ button{font:inherit;color:inherit}
 .sesrow .ln{font-size:13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
 .sesrow .ln span:last-child{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
 .save{font-size:12px;color:var(--muted);min-height:18px}
+.daynote .notak{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:4px}
 .prevciclo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .prevciclo .pck{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
 .prog.anterior{opacity:.8;border-style:dashed!important;margin-top:-4px}
@@ -1072,8 +1073,9 @@ function tabRutina(c){
   const puedeAnotar = !!(S.owner || S.uid);
   const fecha = S.fecha || hoyIso(), sk = sesKey(fecha, S.day), ses = getSes(sk), hecho = !!(ses && ses.hecho);
   const hero=heroHoy(c, dia, sk, fecha); wrap.prepend(hero);
-  if (dia.nota) wrap.append(h("div",{class:"daynote",text:dia.nota}));
-  if (puedeAnotar){
+  /* notas del entrenador: solo las ve Ramiro */
+  if (dia.nota && S.owner) wrap.append(h("div",{class:"daynote"}, h("span",{class:"notak",text:"📝 Nota para vos · los alumnos no la ven"}), h("div",{text:dia.nota})));
+  if (puedeAnotar && S.owner){
     const est=h("div",{class:"save",style:"flex:1 1 100%;min-height:0"});
     wrap.append(h("div",{class:"entreno"+(hecho?" on":"")},
       h("div",{class:"ef"}, h("label",{for:"ses-fecha",text:"Entreno del"}),
@@ -1098,7 +1100,6 @@ function tabRutina(c){
     hero.after(h("button",{class:"btn primary empezar"+(todo?" listo":""),type:"button",onclick:()=>window.dzEntreno&&window.dzEntreno(dzCola, todo?0:ini)},
       todo ? "✓ Entreno completo" : algo ? "▶ Seguir entreno · "+dzCola[ini].nombre : "▶ Empezar entreno"));
   }
-  wrap.append(h("p",{class:"muted",style:"margin:0;font-size:13px"},"En cada entreno anotá el peso (kg) y las repeticiones de cada serie. El promedio de cada semana, de ", h("b",{text:"S1"})," a ",h("b",{text:"S"+nSem(c)}),", se calcula solo."));
   let nEx=0;
   for (const b of dia.bloques||[]){
     const blk = h("div",{class:"block"}, h("div",{class:"blocktitle",text:b.bloque}));
@@ -1129,7 +1130,6 @@ function tabRutina(c){
         const lin = (k,t)=>h("div",{class:"prevciclo"}, h("span",{class:"pck",text:k}), h("span",{text:t}));
         if (prev) card.append(lin("Vez anterior · "+fechaCorta(prev.fecha).replace(/\/\d{4}$/,""), setTxt(prev.ej[key])));
         if (hoy && hoy.some(x=>x&&(x.kg||x.r))) card.append(lin("Hoy", setTxt(hoy)));
-        if (!prev && !(hoy && hoy.length)) card.append(h("div",{class:"prevciclo"}, h("span",{class:"pck",text:"Kilos"}), h("span",{text:"Se anotan en «Empezar entreno»"})));
       }
       blk.append(card);
     }
@@ -1471,7 +1471,7 @@ function tabDieta(c){
   const puede=!!(S.db && S.uid), lista=puede ? cambiosHoy(cid) : [], listo=lista!==null;
   const d=dietaDelDia(plan, lista||[]), t=totDia(d), noCome=swNoCome(plan);
   const prueba = S.owner && !c.soloEntrenador;
-  if (plan.nota) wrap.append(h("p",{class:"muted",style:"margin:0",text:plan.nota}));
+  if (plan.nota && S.owner) wrap.append(h("div",{class:"daynote"}, h("span",{class:"notak",text:"📝 Nota para vos · los alumnos no la ven"}), h("div",{text:plan.nota})));
   const mk=(k,label,unit)=>{
     const goal=o[k]||0, val=Math.round(t[k]), pct=goal?Math.min(100,val/goal*100):0, dev=goal?Math.abs(val-goal)/goal:0;
     return h("div",{class:"macro"}, h("span",{class:"k",text:label}),

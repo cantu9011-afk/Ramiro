@@ -38,6 +38,7 @@ This typically indicates that your device does not have a healthy Internet conne
 .rc-auth{font:inherit;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);white-space:nowrap;cursor:pointer;min-height:28px}
 .rc-auth.in{border-color:var(--red);color:#fff;background:var(--red)}
 body.rc-anon #role{display:none}
+#role:not(.trainer){display:none}
 .rc-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
 @media (min-width:560px){.rc-modal{align-items:center}}
 .rc-card{width:100%;max-width:400px;background:var(--surface);color:var(--ink);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.35);max-height:calc(100dvh - 32px);overflow:auto}
