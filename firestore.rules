@@ -1,0 +1,40 @@
+rules_version = '2';
+// Reglas de seguridad: quién puede leer y escribir cada cosa.
+// El entrenador es la cuenta cuyo email está en config/owner (lo carga scripts/importar.mjs).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logueado() { return request.auth != null; }
+    function entrenador() {
+      return logueado()
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/config/owner)
+        && get(/databases/$(database)/documents/config/owner).data.email == request.auth.token.email;
+    }
+    function yo(uid) { return logueado() && request.auth.uid == uid; }
+
+    // Solo el entrenador puede leerlo (así la app sabe que es él). Se escribe desde el script.
+    match /config/owner { allow read: if entrenador(); allow write: if false; }
+
+    // Datos del entrenador
+    match /clientes/{id} { allow read, write: if entrenador(); }
+    match /cargas/{id}   { allow read, write: if entrenador(); }
+    match /pagos/{id}    { allow read, write: if entrenador(); }
+
+    // Encuesta: cada usuario la suya; el entrenador todas
+    match /admisiones/{uid} { allow read, write: if entrenador() || yo(uid); }
+
+    // Plan del alumno: él lo lee, solo el entrenador lo escribe
+    match /planes/{uid} { allow read: if entrenador() || yo(uid); allow write: if entrenador(); }
+
+    // Cargas, avisos de ingreso y checklist de comidas del alumno
+    match /registros/{uid}   { allow read, write: if entrenador() || yo(uid); }
+    match /solicitudes/{uid} { allow read, write: if entrenador() || yo(uid); }
+    match /checks/{uid}      { allow read, write: if entrenador() || yo(uid); }
+
+    // Nombre visible de cada cuenta (para vincular alumnos)
+    match /perfiles/{uid} { allow read: if entrenador() || yo(uid); allow write: if yo(uid); }
+
+    // Espacio privado de cada usuario (cambios de comidas y checklist propio)
+    match /data/users/{uid}/{docId} { allow read, write: if yo(uid); }
+  }
+}
