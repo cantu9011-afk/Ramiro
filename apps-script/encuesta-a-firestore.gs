@@ -11,7 +11,7 @@
  *  5. Listo: cada respuesta nueva llega sola a "Encuestas recibidas". Para mandar las que ya estaban,
  *     ejecutá "sincronizarTodo" (no duplica: las que ya existen se saltean).
  */
-const PROYECTO = "PEGAR-ID-DEL-PROYECTO";
+const PROYECTO = "ramiro-cantu-entrenamiento";
 const ZONA = "America/Argentina/Mendoza";
 
 function instalar() {

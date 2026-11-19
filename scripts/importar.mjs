@@ -7,6 +7,7 @@
 
   Opciones:
     --clave <archivo>   clave de servicio descargada de Firebase (nunca subirla a git)
+                        (sin --clave usa la sesión de gcloud y el proyecto de .firebaserc)
     --email <email>     email de la cuenta de Google con la que entra Ramiro (queda como entrenador)
     --datos <carpeta>   carpeta con la copia (por defecto ./datos)
     --forzar            importar aunque Firestore ya tenga alumnos (pisa lo que haya)
@@ -20,7 +21,7 @@
 */
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { initializeApp, cert } from "firebase-admin/app";
+import { initializeApp, cert, applicationDefault } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
 const args = process.argv.slice(2);
@@ -37,9 +38,17 @@ if (emulador) {
   initializeApp({ projectId: process.env.GCLOUD_PROJECT || "demo-ramiro" });
 } else {
   const clave = opt("clave");
-  if (typeof clave !== "string" || !existsSync(clave)) { console.error("Falta --clave con el archivo de clave de servicio (.json)."); process.exit(1); }
-  const sa = JSON.parse(readFileSync(clave, "utf8"));
-  initializeApp({ credential: cert(sa), projectId: sa.project_id });
+  if (typeof clave === "string") {
+    if (!existsSync(clave)) { console.error("No encuentro el archivo de clave: " + clave); process.exit(1); }
+    const sa = JSON.parse(readFileSync(clave, "utf8"));
+    initializeApp({ credential: cert(sa), projectId: sa.project_id });
+  } else {
+    // sin clave: usa la sesión de "gcloud auth application-default login" y el proyecto de .firebaserc
+    let proyecto = typeof opt("proyecto") === "string" ? opt("proyecto") : null;
+    if (!proyecto && existsSync(".firebaserc")) proyecto = JSON.parse(readFileSync(".firebaserc", "utf8")).projects.default;
+    if (!proyecto) { console.error("Falta --clave (o --proyecto con una sesión de gcloud)."); process.exit(1); }
+    initializeApp({ credential: applicationDefault(), projectId: proyecto });
+  }
 }
 const db = getFirestore();
 
