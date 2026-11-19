@@ -8,3 +8,6 @@ node_modules/
 .firebase/
 *.log
 emulador-datos/
+
+# Calendario generado (tiene horarios de alumnos): se sube con el sitio, nunca a git
+public/cal/
