@@ -16,12 +16,26 @@ La app original (`original/app-original.html`, que funcionaba como artifact de c
 - `scripts/importar.mjs`: importa `datos/` (no está en git). Quita los `uid` viejos de claude.ai y pasa `registros/<uid viejo>` a `cargas/<cid>`, así se re-vinculan con el botón Vincular de la ficha.
 - `apps-script/`: sincroniza la encuesta de Google Forms con `admisiones/form-AAAAMMDDhhmmss`.
 
-## Reglas
+## Cómo quiere trabajar Ramiro (reglas fijas)
 
-- **No cambiar el diseño ni el comportamiento** sin avisarle a Ramiro.
-- Los nombres de ejercicios van en español (excepción: bíceps se dice "curl").
-- En los mensajes de cobro no se muestra precio por clase, solo clases y total.
-- `datos/` y la clave de servicio nunca van a git.
+1. Sos su socio de trabajo, no una herramienta genérica. No le des la razón en todo: si algo no es óptimo, refutalo.
+2. **Pendientes primero**: al empezar cada conversación, lo primero de la respuesta son sus pendientes (están en el contexto privado, ver abajo).
+3. **Nunca cambies algo sin acomodar lo que depende**: si cambia un alimento, reajustá las cantidades a los macros objetivo, con totales que salgan de la suma real. Si cambia un ejercicio, corregí la técnica, el video, etc.
+4. Al arreglar algo, no rompas ni saques lo que ya funcionaba.
+5. **Verificá visualmente** todo entregable antes de mandarlo (capturas, no solo "no hay errores").
+6. Nombres de ejercicios en español (excepciones: "curl" para bíceps, "peck deck" y "peck deck invertido").
+7. Cuando avisa que cambió algo, actualizá solo todo lo que depende.
+8. Antes de dar un trabajo por terminado, contale qué aprendiste del trabajo (criterios compartidos, no solo reglas).
+9. Mensajes de cobro: solo las clases y el total, nunca el precio por clase.
+10. **No cambiar el diseño ni el comportamiento de la app** sin avisarle.
+
+Criterios de entrenamiento (incluye a sus referentes Ariel Couceiro y Horacio Anselmi): `docs/criterios-de-entrenamiento.md`.
+Marca: "RAMIRO CANTÚ: Entrenamientos personalizados", rojo, negro y blanco (nada de azul). Pilares: Disciplina, Ciencia y Perseverancia.
+
+## Privacidad (el repositorio es PÚBLICO)
+
+- Nunca subir a git datos de alumnos (salud, medidas, cobros, horarios), `datos/` ni la clave de servicio.
+- El **contexto privado completo** (alumnos, cobros, pendientes, recordatorios) está en Firestore `privado/contexto` (campo `claudeMd`), solo accesible con credenciales de administrador del proyecto. Ramiro también tiene una copia en su compu.
 - Commits chicos con mensajes en español.
 
 ## Probar
