@@ -12,6 +12,9 @@ service cloud.firestore {
     }
     function yo(uid) { return logueado() && request.auth.uid == uid; }
 
+    // Agenda de turnos (genera el calendario del iPhone): solo el entrenador
+    match /privado/agenda { allow read, write: if entrenador(); }
+
     // Solo el entrenador puede leerlo (así la app sabe que es él). Se escribe desde el script.
     match /config/owner { allow read: if entrenador(); allow write: if false; }
 

@@ -72,4 +72,5 @@ const dir = new URL("../public/cal/", import.meta.url);
 mkdirSync(dir, { recursive: true });
 for (const f of existsSync(dir) ? readdirSync(dir) : []) if (f.endsWith(".ics") && f !== ag.token + ".ics") unlinkSync(new URL(f, dir));
 writeFileSync(new URL(ag.token + ".ics", dir), L.join("\r\n") + "\r\n");
+await db.doc("privado/agenda").update({ publicado: new Date().toISOString() });
 console.log("Calendario generado:\n  " + resumen.join("\n  "));
