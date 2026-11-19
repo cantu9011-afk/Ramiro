@@ -152,6 +152,38 @@ button{font:inherit;color:inherit}
 .bienv{display:flex;flex-direction:column;gap:8px;padding:18px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--red)}
 .bienv h2{margin:0;font-family:var(--display);font-weight:800;font-size:26px;text-transform:uppercase;line-height:1.05}
 .bienv p{margin:0;color:var(--muted)}
+.meal.plan header .mh{font-size:12px;opacity:.85}
+.meal.plan .slot{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:start;padding:10px 14px;border-top:1px solid var(--line);cursor:default}
+.meal.plan label.slot{cursor:pointer}
+.meal.plan .slot .sk{grid-column:1/-1;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--red)}
+.meal.plan .slot .sk:empty{display:none}
+.meal.plan .slot input[type=checkbox],.meal.plan .slot .vchk{grid-column:1;margin:3px 0 0}
+.meal.plan .slot .sv{grid-column:2;display:flex;flex-direction:column;gap:2px;min-width:0}
+.meal.plan .slot:not(:has(input)):not(:has(.vchk)) .sv{grid-column:1/-1}
+.meal.plan .slot.on .sv>.fn,.meal.plan .slot.on .sv>.qline{opacity:.55;text-decoration:line-through}
+.meal.plan .slot .smac{grid-column:2;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meal.plan .slot .so{font-size:12px;color:var(--muted)}
+.meal.plan .opts{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:5px;font-size:13px;color:var(--muted)}
+.meal.plan .opt{font:inherit;font-size:13px;padding:0;border:0;background:none;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-align:left}
+.meal.plan .opt::before{content:"o ";color:var(--muted);text-decoration:none;display:inline-block;white-space:pre}
+.meal.plan .opt[disabled]{cursor:default;text-decoration:none}
+.meal.plan .opt.volver{color:var(--red);text-decoration:none;margin-top:4px}
+.meal.plan .slot.inf .sv b{font-weight:600}
+.phead{display:flex;flex-direction:column;gap:2px;padding:16px;border-radius:14px;background:var(--grad,var(--red));color:#fff}
+.phead .pk{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;opacity:.85}
+.phead h2{margin:0;font-family:var(--display);font-weight:800;font-size:30px;text-transform:uppercase;line-height:1}
+.phead .pf{font-size:12px;opacity:.85}
+.pinfo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.pinfo .pk{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--red)}
+.pinfo h3{margin:0;font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;line-height:1.1}
+.pinfo ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.pinfo p{margin:0;font-size:14px;white-space:pre-line}
+.pinfo.ind{border-left:3px solid var(--red)}
+.pinfo.plato .pfig{width:min(62vw,220px);align-self:center}
+.pinfo.plato .pfig svg{width:100%;height:auto;display:block}
+.pinfo .pleg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pinfo .pleg div{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.pinfo .pleg span{color:var(--muted);font-size:12px}
 .daynote .notak{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:4px}
 .prevciclo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .prevciclo .pck{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
@@ -1492,7 +1524,9 @@ function tabDieta(c){
       h("div",{class:"bar"}, h("i",{class:dev>0.05?"over":"",style:"width:"+pct+"%"})),
       h("span",{class:"st",text: dev<=0.05 ? "En objetivo" : (val>goal?"+":"")+(val-goal)+" "+unit+" del objetivo"}));
   };
-  wrap.append(h("div",{class:"macros"}, mk("kcal","Calorías","kcal"), mk("p","Proteínas","g"), mk("g","Grasas","g"), mk("c","Carbohidratos","g")));
+  wrap.append(h("div",{class:"phead"}, h("span",{class:"pk",text:"Plan de alimentación"}), h("h2",{text:c.nombre}),
+    h("span",{class:"pf",text:[plan.fecha?"Plan del "+fechaCorta(plan.fecha):"", (d.comidas||[]).length+" comidas por día", "Ramiro Cantú · Entrenamientos personalizados"].filter(Boolean).join(" · ")})));
+  if (S.owner) wrap.append(h("div",{class:"macros"}, mk("kcal","Calorías","kcal"), mk("p","Proteínas","g"), mk("g","Grasas","g"), mk("c","Carbohidratos","g")));
   if (puede && listo && lista.length){
     const n=lista.length;
     wrap.append(h("div",{class:"swbanner"},
@@ -1524,34 +1558,85 @@ function tabDieta(c){
   (d.comidas||[]).forEach((m,mi)=>{
     const items=m.items||[], mt=items.reduce((a,i)=>a+(i.kcal||0),0);
     const all = hechos && items.length && items.every((i,ii)=>i._fuera||hechos["m"+mi+"i"+ii]);
-    wrap.append(h("div",{class:"meal"+(all?" done":"")},
-      h("header",null, h("div",null,h("h3",{text:(all?"✓ ":"")+m.nombre}), m.hora?h("div",{class:"muted",style:"font-size:12px",text:m.hora}):null), h("span",{class:"kc",text:Math.round(mt)+" kcal"})),
-      items.map((i,ii)=>{
-        const key="m"+mi+"i"+ii, on=!!(hechos&&hechos[key]), abierto=S.swOpen===key && !i._sw && !i._fuera;
-        const nombre = i._fuera ? [h("b",{class:"fn",text:i.alimento}), h("span",{class:"qline muted",text:"Hoy no va: lo compensa el cambio de otro alimento"})] : foodLine(i);
-        const extra = i._sw ? h("span",{class:"swnote",text:"⇄ Cambio de hoy · antes: "+i._sw.deTxt+" ("+i._sw.deQ+")"})
-          : (i._aj && !i._fuera) ? h("span",{class:"swnote aj",text:"Ajustado por el cambio de hoy (antes "+i._aj.txt+")"}) : null;
-        let accion=null;
-        if (puede && listo){
-          const stop=ev=>{ ev.preventDefault(); ev.stopPropagation(); };
-          if (i._sw) accion=h("button",{class:"swbtn",type:"button",onclick:ev=>{ stop(ev); guardarCambios(cid, lista.filter(x=>x.k!==key)); }},"Deshacer");
-          else if (!i._fuera && swDe(i)) accion=h("button",{class:"swbtn"+(abierto?" on":""),type:"button","aria-expanded":String(abierto),"aria-controls":"swp-"+key,
-            "aria-label":"Cambiar "+i.alimento+" por otro alimento", onclick:ev=>{ stop(ev); S.swOpen=abierto?null:key; rerender(); }},"⇄ Cambiar");
-        }
-        const mac=h("div",{class:"m"}, S.owner ? h("span",{text: i._fuera ? "—" : `P ${fmt(i.p)} · G ${fmt(i.g)} · C ${fmt(i.c)}`}) : null, accion);
-        let fila;
-        if (ver && !i._fuera) fila=h("div",{class:"food chk ver"+(on?" on":"")}, h("span",{class:"vchk"+(on?" on":""),"aria-label":on?"Comido":"Sin marcar",text:on?"✓":""}), h("div",{class:"n"}, ...nombre, extra), mac);
-        else if (!usaChk || i._fuera) fila=h("div",{class:"food"+(i._fuera?" fuera":"")}, h("div",{class:"n"}, ...nombre, extra), mac);
-        else {
-          const box=h("input",{type:"checkbox",id:"chk-"+key,checked:on,disabled:hechos===null,"aria-label":"Marcar "+i.alimento+" como comido",onchange:ev=>marcarComido(cid,key,ev.target.checked,modo)});
-          fila=h("label",{class:"food chk"+(on?" on":""),for:"chk-"+key}, box, h("div",{class:"n"}, ...nombre, extra), mac);
-        }
-        return h("div",{class:"frow"+(abierto?" open":"")}, fila, abierto ? swPanel(cid,d,key,noCome,lista,prueba?c.nombre:null) : null);
-      })));
+    const tm=swNorm(m.nombre), conInfusion=/desayuno|merienda|media tarde|colacion/.test(tm);
+    const card=h("div",{class:"meal plan"+(all?" done":"")},
+      h("header",null, h("div",null,h("h3",{text:(all?"✓ ":"")+m.nombre}), m.hora?h("div",{class:"mh",text:m.hora}):null), S.owner?h("span",{class:"kc",text:Math.round(mt)+" kcal"}):null));
+    if (conInfusion) card.append(h("div",{class:"slot inf"}, h("span",{class:"sk",text:"Infusión"}), h("div",{class:"sv"}, h("b",{text:"A elección"}), h("span",{class:"so",text:"Té, café, mate o mate cocido. Con edulcorante, sin azúcar."}))));
+    items.forEach((i,ii)=>{
+      const key="m"+mi+"i"+ii, on=!!(hechos&&hechos[key]), de=swDe(i), gr=de?SW[de].grupo:null;
+      const prev=ii>0?swDe(items[ii-1]):null, mismo=prev&&gr&&SW[prev].grupo===gr;
+      const etiqueta = mismo ? "+" : (PLAN_ETQ[gr]||"");
+      const nombre = i._fuera ? [h("b",{class:"fn",text:i.alimento}), h("span",{class:"qline muted",text:"Hoy no va: lo compensa el cambio de otro alimento"})] : foodLine(i);
+      const extra = i._sw ? h("span",{class:"swnote",text:"Elegiste esta opción hoy · la sugerida era "+i._sw.deTxt.toLowerCase()})
+        : (i._aj && !i._fuera) ? h("span",{class:"swnote aj",text:"Ajustado por tu elección de hoy (antes "+i._aj.txt+")"}) : null;
+      let marca=null;
+      if (ver && !i._fuera) marca=h("span",{class:"vchk"+(on?" on":""),"aria-label":on?"Comido":"Sin marcar",text:on?"✓":""});
+      else if (usaChk && !i._fuera) marca=h("input",{type:"checkbox",id:"chk-"+key,checked:on,disabled:hechos===null,"aria-label":"Marcar "+i.alimento+" como comido",onchange:ev=>marcarComido(cid,key,ev.target.checked,modo)});
+      const sv=h("div",{class:"sv"}, ...nombre, extra);
+      if (gr==="verduras" && !i._fuera) sv.append(h("span",{class:"so",text:"Libres: ocupan la mitad del plato, crudas o cocidas."}));
+      /* opciones equivalentes (mismo macro principal, cantidades calculadas para este plan) */
+      if (de && !i._fuera && !mismo){
+        const ops=planOpciones(i, de, noCome);
+        if (i._sw) sv.append(h("button",{class:"opt volver",type:"button",disabled:!(puede&&listo),onclick:()=>guardarCambios(cid,(lista||[]).filter(x=>x.k!==key))},"↺ Volver a la sugerida"));
+        else if (ops.length) sv.append(h("div",{class:"opts"}, h("span",{class:"ol",text:"O también:"}),
+          ops.map(o=>h("button",{class:"opt",type:"button",disabled:!(puede&&listo),title:"Elegir esta opción para hoy",onclick:()=>guardarCambios(cid,(lista||[]).concat([{k:key,de:i.alimento,a:o.n}]))}, o.txt))));
+      }
+      const fila=h(marca&&marca.tagName==="INPUT"?"label":"div",{class:"slot"+(on?" on":"")+(i._fuera?" fuera":""),for:marca&&marca.tagName==="INPUT"?"chk-"+key:null},
+        h("span",{class:"sk",text:etiqueta}), marca, sv,
+        S.owner && !i._fuera ? h("span",{class:"smac",text:`P ${fmt(i.p)} · G ${fmt(i.g)} · C ${fmt(i.c)}`}) : null);
+      card.append(fila);
+    });
+    wrap.append(card);
   });
-  const conGr=(d.comidas||[]).some(m=>(m.items||[]).some(i=>i.u&&i.u.gr));
-  if (!conGr) wrap.append(h("p",{class:"muted",style:"margin:0;font-size:12px",text:"Medidas caseras, sin balanza. P = proteínas, G = grasas, C = carbohidratos, en gramos."}));
+  wrap.append(platoModelo());
+  const peso=num((c.datos||{}).peso), litros=peso?Math.max(2,Math.round(peso*0.035*10)/10):2;
+  wrap.append(h("div",{class:"pinfo"}, h("span",{class:"pk",text:"Hidratación"}), h("h3",{text:fmt(litros)+" litros de agua por día"}),
+    h("ul",null, ["Tomá agua a lo largo del día, sin esperar a tener sed: cuando aparece, ya te falta líquido.",
+      "Durante el entreno, 100 a 150 ml en sorbos cada 10 a 15 minutos.",
+      "Suman las infusiones sin azúcar. Para darle sabor al agua: limón, naranja, pepino o jengibre."].map(t=>h("li",{text:t})))));
+  wrap.append(h("div",{class:"pinfo"}, h("span",{class:"pk",text:"Recomendaciones"}),
+    h("ul",null, ["Respetá las comidas y los horarios del plan: no saltees ninguna.",
+      "Armá el plato con las porciones indicadas y no lleves la olla a la mesa.",
+      "La sal, al cocinar: no agregues en la mesa.",
+      "Las cantidades en gramos son en crudo. La medida casera es una guía para cuando no tenés balanza.",
+      "Comé tranquilo y sin pantallas: registrás mejor lo que comés.",
+      "15 minutos de sol en cara y manos por día ayudan con la vitamina D (con protector solar)."].map(t=>h("li",{text:t})))));
+  if (plan.indicaciones) wrap.append(h("div",{class:"pinfo ind"}, h("span",{class:"pk",text:"Indicaciones de Ramiro"}), h("p",{text:plan.indicaciones})));
   return wrap;
+}
+const PLAN_ETQ={carnes:"Proteína",protdes:"Proteína",lacteos:"Lácteo",carbos:"Carbohidrato",carbdes:"Carbohidrato",frutas:"Fruta",grasas:"Grasa",verduras:"Vegetales"};
+/* hasta 4 opciones del mismo grupo con la misma cantidad del macro principal */
+function planOpciones(it, de, noCome){
+  const f0=SW[de], M=SW_GRUPOS[f0.grupo].k, base=it[M]||0; if(!base) return [];
+  const out=[];
+  for (const n of Object.keys(SW)){
+    if (n===de || SW[n].grupo!==f0.grupo || !swPermitido(n,noCome) || /Serenísima|Ser Pro|Campagnola|Quaker|untable/.test(n)) continue;
+    const f=SW[n], q=swRedondear(base/f.u[M], f.u, swPasoG(n), swPasoG(n)), x={u:f.u,cantidad:q}, gr=Math.round(f.u.gr*q), nom=n.replace(/\s*\(.*\)$/,"").toLowerCase();
+    const implicito = swNorm(n).startsWith(swNorm(f.u.s).split(" ")[0].slice(0,5));
+    const txt = f0.grupo==="verduras" ? n.replace(/\s*\(.*\)$/,"") : f.paso==="g" ? gr+" "+(f.u.un||"g")+" de "+nom : implicito ? medida(x) : medida(x)+" de "+nom;
+    out.push({n, txt});
+    if (out.length>=4) break;
+  }
+  return out;
+}
+function platoModelo(){
+  const box=h("div",{class:"pinfo plato"}, h("span",{class:"pk",text:"Así se arma el plato"}), h("h3",{text:"Almuerzo y cena"}));
+  const fig=h("div",{class:"pfig"});
+  fig.innerHTML='<svg viewBox="0 0 200 200" role="img" aria-label="Plato: la mitad vegetales, un cuarto proteína y un cuarto carbohidratos, con una cucharada de aceite">'+
+    '<circle cx="100" cy="100" r="92" fill="var(--surface)" stroke="var(--line)" stroke-width="3"/>'+
+    '<path d="M100 100 L100 12 A88 88 0 0 1 100 188 Z" fill="var(--ok-soft)"/>'+
+    '<path d="M100 100 L100 188 A88 88 0 0 1 12 100 Z" fill="var(--red-soft)"/>'+
+    '<path d="M100 100 L12 100 A88 88 0 0 1 100 12 Z" fill="var(--amber-soft)"/>'+
+    '<line x1="100" y1="12" x2="100" y2="188" stroke="var(--line)" stroke-width="2"/><line x1="12" y1="100" x2="100" y2="100" stroke="var(--line)" stroke-width="2"/>'+
+    '<text x="146" y="104" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ok)">Vegetales</text>'+
+    '<text x="58" y="66" text-anchor="middle" font-size="12" font-weight="700" fill="var(--amber-ink)">Carbohidratos</text>'+
+    '<text x="58" y="142" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">Proteína</text></svg>';
+  box.append(fig, h("div",{class:"pleg"},
+    h("div",null,h("b",{text:"½ Vegetales"}),h("span",{text:"Crudos, cocidos o mixtos. Variá colores."})),
+    h("div",null,h("b",{text:"¼ Proteína"}),h("span",{text:"Pollo, carne magra, cerdo, pescado, huevo o legumbres."})),
+    h("div",null,h("b",{text:"¼ Carbohidratos"}),h("span",{text:"Arroz, fideos, papa, batata, quinoa o choclo."})),
+    h("div",null,h("b",{text:"+ Aceite"}),h("span",{text:"La cantidad de tu plan, mejor de oliva y en crudo."}))));
+  return box;
 }
 /* ---------- intercambio de alimentos ----------
    Cada alimento del plan pertenece a un grupo con un macro principal (carnes → proteína, carbos → carbohidratos, grasas → grasa).
@@ -1588,6 +1673,8 @@ const SW_RAW = [
  ["Jamón cocido natural","protdes","feta","fetas",20,"",3.6,1,0.2,1,"",["Jamón cocido"]],
  ["Fiambre de pechuga de pavo","protdes","feta","fetas",20,"",3.6,0.4,0.4,1,"",["Pechuga de pavo en fetas"]],
  ["Queso magro (port salut light)","protdes","trozo","trozos",30,"",7.2,2.4,0.3,"g","lacteo",["Queso port salut light","Queso magro"]],
+ ["Barrita de proteína (15-20 g de proteína)","protdes","barrita","barritas",45,"",17,6,16,0.5,"",["Barrita proteica","Barrita de proteína"]],
+ ["Queso de máquina","protdes","feta","fetas",20,"",4.6,5.4,0.3,1,"lacteo",[]],
  ["Ricota descremada","protdes","cucharada sopera colmada","cucharadas soperas colmadas",30,"",3.3,0.9,1.2,1,"lacteo",[]],
  ["Leche descremada","lacteos","taza","tazas",250,"",8.5,1,12,0.5,"lacteo",["Leche descremada La Serenísima"]],
  ["Leche descremada deslactosada","lacteos","taza","tazas",250,"",8.5,1,12,0.5,"lacteo",[]],
@@ -1840,7 +1927,7 @@ function foodLine(i){
 function fracTxt(q){ const t=Math.round(q*100)/100, w=Math.floor(t), r=Math.round((t-w)*100)/100;
   const f={0.25:"¼",0.5:"½",0.75:"¾"}[r]; return f ? (w? w+" "+f : f) : fmt(t); }
 function medida(i){
-  if (i.u){ let q=num(i.cantidad)||0; if (i._sw||i._aj) q=Math.max(0.25,Math.round(q*4)/4);
+  if (i.u){ let q=num(i.cantidad)||0; const fg=SW[i.alimento]; if (i._sw||i._aj||(fg&&fg.paso==="g")) q=Math.max(0.25,Math.round(q*4)/4);
     if (/^[¼½¾]/.test(i.u.s)) return q===1 ? i.u.s : fracTxt(q)+" × "+i.u.s;
     return fracTxt(q)+" "+(q>1?i.u.pl:i.u.s); }
   const m=String(i.medida||""), sp=m.indexOf(" ");
@@ -2020,7 +2107,7 @@ function editRutina(d){
       field("Nombre del día",dia,"nombre",{wide:true,after:()=>{const c=document.querySelector('.daychip[aria-pressed="true"] b'); if(c) c.textContent=dia.nombre||"Sin nombre";}}),
       field("Día de la semana",dia,"semana",{wide:true,options:SEMANA,after:()=>{const c=document.querySelector('.daychip[aria-pressed="true"] small'); if(c) c.textContent=diaLbl(dia,S.day);}}),
       field("Foco",dia,"foco",{wide:true,grow:true,ph:"Ej.: Pecho, hombro y tríceps"}),
-      field("Nota del día",dia,"nota",{wide:true,grow:true,ph:"Ej.: Antes del press de banca, 2 series de aproximación"})),
+      field("Nota del día (solo la ves vos)",dia,"nota",{wide:true,grow:true,ph:"Ej.: Antes del press de banca, 2 series de aproximación"})),
     h("div",{class:"rowbtns"},
       iconBtn("← Antes","Mover el día antes",()=>{ if(S.day>0){ move(d.dias,S.day,-1); S.day--; } }),
       iconBtn("Después →","Mover el día después",()=>{ if(S.day<d.dias.length-1){ move(d.dias,S.day,1); S.day++; } }),
@@ -2097,7 +2184,8 @@ function editDieta(d){
         field("Proteínas (g)",d.dieta.objetivo,"p",{num:true,after:upd}),
         field("Grasas (g)",d.dieta.objetivo,"g",{num:true,after:upd}),
         field("Carbos (g)",d.dieta.objetivo,"c",{num:true,after:upd})),
-      field("Nota para el alumno",d.dieta,"nota",{ph:"Ej.: Déficit del 20%. Sin pescado."}),
+      field("Indicaciones para el alumno (las ve en su plan)",d.dieta,"indicaciones",{area:true,ph:"Ej.: Tomá la levotiroxina en ayunas y esperá 30 a 60 min antes de desayunar."}),
+      field("Nota para vos (los alumnos no la ven)",d.dieta,"nota",{ph:"Ej.: Déficit del 20%. Harris-Benedict × 1,5."}),
       field("No come (no se le ofrece en los cambios de alimentos)",d.dieta,"noCome",{ph:"Ej.: pescado, gluten, frutos secos"})),
     h("div",{class:"sticky-tot"}, h("span",{class:"eyebrow",text:"Plan vs. objetivo"}), totalsNode(d)));
   const foods=Object.keys(FOODS).sort((a,b)=>a.localeCompare(b,"es"));

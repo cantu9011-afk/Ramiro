@@ -1,0 +1,45 @@
+{
+  "ramiro": {
+    "comidas": [
+      {
+        "nombre": "Desayuno",
+        "hora": "Antes del entreno 1"
+      },
+      {
+        "nombre": "Almuerzo",
+        "hora": "Después del entreno 1"
+      },
+      {
+        "nombre": "Merienda",
+        "hora": "Antes del entreno 2"
+      },
+      {
+        "nombre": "Cena",
+        "hora": "Después del entreno 2"
+      }
+    ]
+  },
+  "alejandro": {
+    "comidas": [
+      {
+        "nombre": "Desayuno",
+        "hora": "Después del entreno"
+      },
+      {
+        "nombre": "Almuerzo",
+        "hora": ""
+      },
+      {
+        "nombre": "Merienda",
+        "hora": ""
+      },
+      {
+        "nombre": "Cena",
+        "hora": ""
+      }
+    ]
+  },
+  "ana": {
+    "sinLacteoDesayuno": true
+  }
+}
