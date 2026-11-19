@@ -1,0 +1,10 @@
+# Datos de alumnos: nunca a git
+datos/
+# Clave de servicio de Firebase: nunca a git
+clave-servicio*.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+node_modules/
+.firebase/
+*.log
+emulador-datos/
