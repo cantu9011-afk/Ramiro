@@ -7,7 +7,8 @@
   node scripts/calendario.mjs --link   → muestra el link para suscribirse
 
   privado/agenda = { token, alumnos: { <cid>: { bloques:[{dias:["MO","WE"], desde:"07:00", hasta:"08:00"}],
-                                                ausencias:["2026-12-02"], hasta:"2026-11-30" } } }
+                                                ausencias:["2026-12-02"], hasta:"2026-11-30",
+                                                extras:[{fecha:"2026-11-20", desde:"07:00", hasta:"08:00"}] } } }
   Reglas: un alumno en pausa no aparece; con onlineDesde, lo presencial termina el día anterior.
 */
 import { mkdirSync, writeFileSync, readdirSync, unlinkSync, existsSync } from "node:fs";
@@ -57,7 +58,14 @@ for (const [cid, a] of Object.entries(ag.alumnos || {})) {
     for (const x of a.ausencias || []) { const dx = parse(x); if (b.dias.includes(DIAS[dx.getUTCDay()])) L.push(`EXDATE;TZID=America/Argentina/Mendoza:${ymd(dx)}T${hm(b.desde)}`); }
     L.push("END:VEVENT");
   });
-  resumen.push(`${c.nombre}: ${(a.bloques || []).map(b => b.dias.join("/") + " " + b.desde + "-" + b.hasta).join(" + ")}${hasta ? " hasta " + hasta.toISOString().slice(0, 10) : ""}${(a.ausencias || []).length ? " · no viene: " + a.ausencias.join(", ") : ""}`);
+  /* cambios de un solo día (por ejemplo, viene en otro horario esa vez) */
+  (a.extras || []).forEach((x, xi) => {
+    const dx = parse(x.fecha); if (dx < desdeBase) return;
+    L.push("BEGIN:VEVENT", `UID:${cid}-extra-${x.fecha}-${xi}@ramiro-cantu-entrenamiento`, `DTSTAMP:${stamp}`,
+      `SUMMARY:${esc("Entrenamiento - " + nombre)}`,
+      `DTSTART;TZID=America/Argentina/Mendoza:${ymd(dx)}T${hm(x.desde)}`, `DTEND;TZID=America/Argentina/Mendoza:${ymd(dx)}T${hm(x.hasta)}`, "END:VEVENT");
+  });
+  resumen.push(`${c.nombre}: ${(a.bloques || []).map(b => b.dias.join("/") + " " + b.desde + "-" + b.hasta).join(" + ")}${hasta ? " hasta " + hasta.toISOString().slice(0, 10) : ""}${(a.ausencias || []).length ? " · no viene: " + a.ausencias.join(", ") : ""}${(a.extras || []).length ? " · extra: " + a.extras.map(x => x.fecha + " " + x.desde + "-" + x.hasta).join(", ") : ""}`);
 }
 L.push("END:VCALENDAR");
 const dir = new URL("../public/cal/", import.meta.url);
