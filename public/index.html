@@ -2470,11 +2470,12 @@ body.dzopen{overflow:hidden}
 .dzlog{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(239,74,64,.35)}
 .dzlog-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .dzlog-prev{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
-.dzlog-row{display:grid;grid-template-columns:1fr 1fr 48px;gap:8px;align-items:end}
+.dzlog-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
 .dzlog-row label{display:flex;flex-direction:column;gap:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
 .dzlog-row input{width:100%;min-width:0;height:52px;border-radius:10px;border:1px solid rgba(243,240,240,.18);background:rgba(0,0,0,.35);color:var(--ink);text-align:center;font:700 22px var(--body);font-variant-numeric:tabular-nums;padding:0}
 .dzlog-row input:focus{outline:2px solid var(--red);outline-offset:1px}
-.dzrep{height:52px;border-radius:10px;border:1px solid rgba(239,74,64,.5);background:transparent;color:var(--red);font-size:22px;font-weight:700;cursor:pointer}
+.dzrep{height:52px;min-width:52px;max-width:112px;border-radius:10px;border:1px solid rgba(239,74,64,.5);background:transparent;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;line-height:1.15;padding:4px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.dzrep b{font-size:20px;line-height:1}
 .dzlog-st{font-size:12px;min-height:16px;color:var(--ok)}
 .dznext{font-size:13px;color:var(--muted);text-align:center;min-height:18px}
 .dznext b{color:var(--ink)}
@@ -2945,11 +2946,14 @@ function logPaint(reset){
   if (box.hidden) return;
   const v=window.__dzSerie(L.q, L.i);
   $("dzLogT").textContent="Anotá la serie "+(L.i+1)+(L.q!==S.queue[S.idx]?" de "+L.q.nombre:"");
-  $("dzLogPrev").textContent=(v.pkg||v.pr)?"Anterior: "+(v.pkg||"–")+" kg × "+(v.pr||"–"):"";
+  $("dzLogPrev").textContent="";
   const kg=$("dzKg"), r=$("dzR");
   if (reset || document.activeElement!==kg) kg.value=v.kg; if (reset || document.activeElement!==r) r.value=v.r;
-  kg.placeholder=v.pkg||"–"; r.placeholder=v.pr||"–";
-  $("dzRep").hidden=!(v.pkg||v.pr);
+  kg.placeholder="–"; r.placeholder="–";
+  /* lo de la vez anterior va en el botón ↺: si hizo lo mismo, lo toca y se completa */
+  const rp=$("dzRep"); rp.hidden=!(v.pkg||v.pr);
+  rp.innerHTML="<b>↺</b><span>"+esc((v.pkg||"–")+" kg × "+(v.pr||"–"))+"</span>";
+  rp.setAttribute("aria-label","Igual que la vez anterior: "+(v.pkg||"–")+" kilos por "+(v.pr||"–"));
   if (reset) $("dzLogSt").textContent="";
 }
 function logPut(campo, val){ if(!S.log||!window.__dzAnotar) return; window.__dzAnotar(S.log.q, S.log.i, campo, val, $("dzLogSt")); }
