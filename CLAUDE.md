@@ -42,6 +42,12 @@ Marca: "RAMIRO CANTÚ: Entrenamientos personalizados", rojo, negro y blanco (nad
 
 `npm run publicar`: arma el conector, marca la versión (fecha y hora en `VERSION_APP` y `public/version.json`) y sube el sitio. La página compara su versión con `version.json` al volver a abrirse y se recarga sola (nunca en medio de un entreno ni con el editor abierto). Ver la versión al pie de la portada.
 
+## Calendario y revisión diaria
+
+- Calendario "Entrenamientos" (suscripción del iPhone): `scripts/calendario.mjs` lo genera desde Firestore `privado/agenda` (bloques por alumno, ausencias, fecha de fin, token del link) y el estado de cada alumno en la app (en pausa no aparece; con `onlineDesde`, lo presencial termina el día anterior). Escribe `public/cal/<token>.ics`, que **no va a git** y se sube con `npm run publicar`. El link sale con `node scripts/calendario.mjs --link`.
+- Toda alta, baja, cambio de horario, pausa o vacaciones se hace en la app **y** en `privado/agenda`, y después `npm run publicar`.
+- Revisión automática (6:41 y 14:41, hora de Mendoza): `scripts/revision.mjs` con las filas de la planilla de la encuesta leídas por el conector de Google Sheets.
+
 ## Probar
 
 `firebase emulators:start --only auth,firestore --project demo-ramiro` + `node scripts/importar.mjs --emulador --email ...` + servir `public/` con un `config.js` que tenga `emuladores:true` y `projectId:"demo-ramiro"`.
