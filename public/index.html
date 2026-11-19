@@ -1125,16 +1125,12 @@ function tabRutina(c){
         e.como ? h("details",null, h("summary",{text:"Cómo se hace"}), h("p",{text:e.como})) : null,
         safeUrl(e.video) ? h("a",{href:safeUrl(e.video),target:"_blank",rel:"noopener",class:"vid"},"▶ Ver video") : null));
       if (e.registro && (S.owner || S.uid)){
-        const key = keyOf(S.day,e), vals = semanal(c,key);
-        card.append(seriesBox(e, key, fecha, sk));
-        card.append(h("div",{class:"wkhead",text:"Promedio semanal (se calcula solo)"}));
-        card.append(h("div",{class:"loads",style:"grid-template-columns:repeat("+(vals.length>6?Math.ceil(vals.length/2):vals.length)+",minmax(0,1fr))"}, vals.map((v,i)=>{
-          const dl=semLabel(c,i);
-          return h("div",{class:"load"}, h("label",null, "S"+(i+1), dl?h("small",{text:dl}):null),
-            h("div",{class:"wk"+(v.kg!=null?" on":""),"aria-label":e.nombre+" semana "+(i+1)+": "+(v.kg!=null?fmt(v.kg)+" kilos promedio":"sin datos")},
-              v.kg!=null?fmt(v.kg):"–", v.r!=null?h("small",{text:fmt(v.r)+" rep"}):null));
-        })));
-        const pl=prevLinea(c,key); if (pl) card.append(pl);
+        /* en la rutina solo se lee: lo de la vez anterior y lo de hoy. Los kilos se anotan en el entreno guiado */
+        const key = keyOf(S.day,e), prev = prevSes(S.day, key, fecha), hoy = ((getSes(sk)||{}).ej||{})[key];
+        const lin = (k,t)=>h("div",{class:"prevciclo"}, h("span",{class:"pck",text:k}), h("span",{text:t}));
+        if (prev) card.append(lin("Vez anterior · "+fechaCorta(prev.fecha).replace(/\/\d{4}$/,""), setTxt(prev.ej[key])));
+        if (hoy && hoy.some(x=>x&&(x.kg||x.r))) card.append(lin("Hoy", setTxt(hoy)));
+        if (!prev && !(hoy && hoy.length)) card.append(h("div",{class:"prevciclo"}, h("span",{class:"pck",text:"Kilos"}), h("span",{text:"Se anotan en «Empezar entreno»"})));
       }
       blk.append(card);
     }
@@ -2751,7 +2747,8 @@ function guiadoPaint(q, nx, yaHecho, sinDesc, tw, next){
   if(!g){ app.classList.remove("mas"); return; }
   const tot=S.total, a=$("dzAhora"), ob=$("dzObj");
   let ah="", ok=false, pos=(q.bloque?q.bloque+" · ":"")+"ejercicio "+(S.idx+1)+" de "+S.queue.length;
-  if(yaHecho){ ah="✓ Ejercicio completo"; ok=true; }
+  if(S.porCerrar){ ah="✓ Última serie del día · anotala"; ok=true; }
+  else if(yaHecho){ ah="✓ Ejercicio completo"; ok=true; }
   else if(S.paused) ah="En pausa";
   else if(S.mode==="rest" && S.justChanged && S.prevQ){ ah="✓ Terminaste "+S.prevQ.nombre.toLowerCase()+" · descansá"; pos="Lo que sigue · "+pos; }
   else if(S.mode==="rest") ah="Descansá · después la serie "+next+" de "+tot;
@@ -2812,7 +2809,8 @@ function render(){
   if(yaHecho){ $("dzState").textContent="Ejercicio completo"; $("dzTime").textContent="✓"; $("dzSub").textContent=S.total+" de "+S.total+" series"; }
   guiadoPaint(q, nx, yaHecho, sinDesc, tw, next);
   const m=$("dzMain"); if(yaHecho){ m.textContent=nx?"Siguiente: "+nx.nombre:"Ver resumen"; m.classList.add("ok"); } else m.textContent=S.mode==="finished"?(S.resumen?"Cerrar":q?"Terminaste el día":"Siguiente ejercicio"):S.mode==="work"?"Terminé antes":tw?"▶ Empezar serie "+next+" · "+(tw<60?restTxt(tw):fmt(tw)):sinDesc&&S.mode!=="rest"?"✓ Hecho · siguiente":"Siguiente serie"; m.classList.toggle("ok",S.mode==="finished"||yaHecho);
-  if(S.entreno && !yaHecho && !S.resumen){
+  if(S.porCerrar) m.textContent="Ver resumen ✓";
+  if(S.entreno && !yaHecho && !S.resumen && !S.porCerrar){
     /* textos claros del botón principal en el modo entreno */
     if(S.mode==="rest") m.textContent="Listo, empiezo · serie "+next;
     else if(S.mode==="ready") m.textContent="✓ Terminé la serie "+next;
@@ -2874,6 +2872,7 @@ function cerrarSerie(desde, len, conPista){
   if(S.done>=S.total && S.queue.length){
     S.fin[S.idx]=true; window.__dzMarca&&window.__dzMarca(S.queue[S.idx]); const n=sigIdx();
     if(n>=0){ S.prevQ=S.queue[S.idx]; cargar(n); S.justChanged=true; logPaint(false); }
+    else if(S.log && S.entreno){ S.mode="finished"; S.porCerrar=true; pistaStop(); render(); return; } /* deja anotar la última serie antes del resumen */
     else { terminarEntreno(); return; }
   } else if(S.done>=S.total){ S.mode="finished"; pistaStop(); render(); return; }
   S.len=len; S.endAt=desde+len*1000; S.mode="rest"; lastBeep=null; presets(); if(conPista) pistaPlay(); render();
@@ -2885,6 +2884,7 @@ function empezarTrabajo(){
 }
 $("dzMain").onclick=()=>{
   audio(); awake(); despausar();
+  if(S.mode==="finished" && S.porCerrar){ S.porCerrar=false; S.log=null; logPaint(true); terminarEntreno(); return; }
   if(S.mode==="finished"){ if(S.queue.length){ S.queue=[]; S.idx=0; S.entreno=false; S.resumen=null; $("dzFin").hidden=true; mapPaint(); close(); } S.done=0; S.mode="idle"; render(); return; }
   if(S.mode==="work"){ cerrarSerie(Date.now(), S.rest, true); return; }
   if(S.entreno && S.mode==="rest"){ S.paused=false; S.mode="ready"; pistaStop(); presets(); render(); return; }
@@ -2957,7 +2957,7 @@ $("dzKg").addEventListener("input",e=>logPut("kg",e.target.value.trim()));
 $("dzR").addEventListener("input",e=>logPut("r",e.target.value.trim()));
 $("dzRep").onclick=()=>{ if(!S.log) return; const v=window.__dzSerie(S.log.q,S.log.i); if(v.pkg){ $("dzKg").value=v.pkg; logPut("kg",v.pkg);} if(v.pr){ $("dzR").value=v.pr; logPut("r",v.pr);} };
 function cargar(i){ const q=S.queue[i]; S.idx=i; S.total=q.series; S.rest=q.rest; S.len=q.rest||S.len; S.done=S.fin&&S.fin[i]?q.series:0; presets(); exPaint(); }
-window.dzCargar=(cola,i)=>{ S.queue=cola.slice(); S.fin={}; S.hechas={};
+window.dzCargar=(cola,i)=>{ S.queue=cola.slice(); S.fin={}; S.hechas={}; S.porCerrar=false;
   /* con todos los ejercicios con registro hechos, el día cuenta como completo (también la entrada en calor y el core) */
   const diaListo=cola.some(q=>q.registro) && cola.every(q=>q.hecho||!q.registro);
   cola.forEach((q,k)=>{ if(q.hecho||diaListo) S.fin[k]=true; }); S.entreno=cola.length>1; S.t0=Date.now(); S.resumen=null; S.paused=false; pistaStop(); S.log=null; logPaint(true); cargar(i); S.mode="idle"; S.justChanged=false; lastBeep=null; open(); };
@@ -3038,6 +3038,7 @@ function finPaint(){
 /* cambia de ejercicio o de serie y deja el reloj como estaba (si estaba descansando, el descanso sigue) */
 /* atras: volviste a una serie ya hecha → las casillas de kg y reps pasan a esa serie para corregirla o rehacerla */
 function mover(i, done, atras){
+  S.porCerrar=false;
   const k={mode:S.mode,endAt:S.endAt,len:S.len,paused:S.paused,pausaEn:S.pausaEn}, cambia=i!==S.idx;
   if(k.mode==="work"){ pistaStop(); k.mode="idle"; k.paused=false; }
   if(k.mode==="finished") k.mode="idle";
