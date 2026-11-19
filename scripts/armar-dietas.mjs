@@ -28,7 +28,7 @@ const elegir = (lista, noCome) => lista.find(n => SW[n] && permitido(n, noCome))
 function plantilla(tipo, ctx, noCome) {
   const fruta = ctx.pre || ctx.post ? ["Banana", "Manzana", "Pera"] : ctx.i % 2 ? ["Manzana", "Frutillas", "Naranja", "Pera"] : ["Frutillas", "Naranja", "Manzana", "Pera"];
   if (tipo === "principal") return [
-    ["carnes", "p", ctx.cena ? ["Vacuno magro (peceto, nalga o cuadrada)", "Pechuga de pollo sin piel", "Lomo de cerdo magro"] : ["Pechuga de pollo sin piel", "Merluza", "Vacuno magro (peceto, nalga o cuadrada)", "Pechuga de pavo"]],
+    ["carnes", "p", ctx.cena ? ["Vacuno magro (peceto, nalga o cuadrada)", "Pechuga de pollo sin piel", "Lomo de cerdo magro"] : ["Pechuga de pollo sin piel", "Muslo de pollo sin piel", "Merluza", "Vacuno magro (peceto, nalga o cuadrada)", "Pechuga de pavo"]],
     ["carbos", "c", ctx.cena ? ["Batata", "Papa", "Arroz blanco"] : ["Arroz blanco", "Fideos secos (cortos)", "Papa"]],
     ["verduras", "fijo", ["Verduras verdes (zapallito, brócoli, espinaca)", ctx.cena ? "Zapallo anco" : "Ensalada de tomate y zanahoria", "Ensalada de lechuga y tomate"]],
     ["grasas", "g", ["Aceite de oliva", "Aceite de girasol o canola"]]];
