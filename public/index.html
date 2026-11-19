@@ -1119,8 +1119,7 @@ function tabRutina(c){
       const dzI = dzCola.findIndex(q=>q.id===e.id && q.nombre===e.nombre);
       if (e.tempo||e.descanso) card.append(h("div",{class:"params"},
         e.tempo?h("span",null,"Tempo ",h("b",{text:e.tempo})):null,
-        e.descanso?h("span",null,"Descanso ",h("b",{text:e.descanso})):null,
-        dzI>=0&&dzCola[dzI].rest?h("button",{class:"dzgo",type:"button","aria-label":"Abrir reloj de descanso para "+e.nombre,onclick:()=>window.dzCargar&&window.dzCargar(dzCola,dzI)},"⏱ Iniciar"):null));
+        e.descanso?h("span",null,"Descanso ",h("b",{text:e.descanso})):null));
       if (e.como || e.video) card.append(h("div",{class:"howto"},
         e.como ? h("details",null, h("summary",{text:"Cómo se hace"}), h("p",{text:e.como})) : null,
         safeUrl(e.video) ? h("a",{href:safeUrl(e.video),target:"_blank",rel:"noopener",class:"vid"},"▶ Ver video") : null));
@@ -2820,8 +2819,9 @@ function render(){
   navPaint(nx);
   const fab=$("dzFab");
   /* en modo edición la barra de Guardar ocupa el borde de abajo: el botón flotante se esconde */
-  try{ fab.hidden = !!(window.__app && window.__app.editing) && $("dzSheet").hidden; }catch(e){}
-  $("dzFabTxt").textContent=S.mode==="rest"||S.mode==="work"?fmt(left):S.mode==="ready"?"GO · serie "+next:"Descanso";
+  /* el reloj vive solo en el entreno guiado: el botón flotante aparece únicamente para volver a un entreno empezado */
+  try{ fab.hidden = !!(window.__app && window.__app.editing) || !(S.entreno && S.queue.length && !S.resumen && S.mode!=="finished"); }catch(e){}
+  $("dzFabTxt").textContent=S.mode==="rest"||S.mode==="work"?fmt(left):S.mode==="ready"?"GO · serie "+next:"Volver al entreno";
   fab.classList.toggle("ready",S.mode==="ready");
   if(S.paused){ $("dzState").textContent="En pausa"; $("dzFabTxt").textContent="⏸ "+fmt(left); }
 }
