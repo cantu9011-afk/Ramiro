@@ -149,6 +149,9 @@ button{font:inherit;color:inherit}
 .sesrow .ln{font-size:13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
 .sesrow .ln span:last-child{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
 .save{font-size:12px;color:var(--muted);min-height:18px}
+.bienv{display:flex;flex-direction:column;gap:8px;padding:18px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--red)}
+.bienv h2{margin:0;font-family:var(--display);font-weight:800;font-size:26px;text-transform:uppercase;line-height:1.05}
+.bienv p{margin:0;color:var(--muted)}
 .daynote .notak{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:4px}
 .prevciclo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .prevciclo .pck{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
@@ -869,6 +872,15 @@ function viewPicker(){
   if (S.error) sec.append(h("div",{class:"notice err",text:S.error}));
   if (!S.uid && S.loaded && window.rcIngresar) sec.append(h("div",null,h("button",{class:"btn primary",type:"button",onclick:()=>window.rcIngresar("picker")},"Ingresar")));
   if (!S.loaded && !S.error) sec.append(h("div",{class:"notice",text:"Cargando alumnos…"}));
+  else if (S.loaded && !list.length && !S.owner && S.uid && !S.sinPermiso){
+    const msg="¡Hola Ramiro! Ya entré a la app de entrenamientos. Soy ";
+    if (sec.firstChild) sec.firstChild.remove(); /* sin el «¿Quién entrena hoy?» mientras espera */
+    sec.append(h("div",{class:"bienv"},
+      h("span",{class:"eyebrow",text:"¡Bienvenido!"}),
+      h("h2",{text:"Qué bueno tenerte acá"}),
+      h("p",{text:"Ya le avisé a Ramiro que entraste. En cuanto active tu plan, vas a ver acá tu rutina y tu dieta, y la app te va a guiar serie por serie en cada entreno."}),
+      h("a",{class:"btn primary",href:MARCA.waLink+"?text="+encodeURIComponent(msg),target:"_blank",rel:"noopener",style:"text-decoration:none;align-self:flex-start"},"Avisale por WhatsApp ↗")));
+  }
   else if (S.loaded && !list.length) sec.append(h("div",{class:"notice",text: S.owner ? "Todavía no hay alumnos cargados." : S.sinPermiso
       ? "No se pudo avisarle a Ramiro que entraste. Recargá la página y, si sigue igual, escribile por WhatsApp."
       : "Ramiro todavía no activó tu plan. Ya le llegó el aviso de que entraste: cuando te habilite, vas a ver acá tu rutina y tu dieta."}));
@@ -1244,7 +1256,8 @@ window.__dzResumen = cola => {
     if (best>0 && cur>best) recs.push({nombre:q.nombre, kg:cur, antes:best});
   }
   if (!S.festejado[q0.sk]){ S.festejado[q0.sk]=true; setTimeout(fiesta, 200); }
-  return {series, vol:Math.round(vol), ej, recs};
+  const c=S.clientes[S.cid]||{}, dia=(c.dias||[])[q0.di??S.day]||{};
+  return {series, vol:Math.round(vol), ej, recs, wa:MARCA.waLink, frase:MARCA.lema, dia:dia.foco||dia.nombre||"", alumno:S.owner?"":(c.nombre||"")};
 };
 window.__dzAnotar = (q, i, campo, val, status) => {
   queueSes(q.sk, q.di, x=>{ x.ej=x.ej||{}; const a=(x.ej[q.key]||[]).slice(); while(a.length<=i) a.push({kg:"",r:""});
@@ -1502,7 +1515,7 @@ function tabDieta(c){
       hechos===null ? h("span",{class:"muted",style:"font-size:13px",text:"Cargando…"}) : h("div",{class:"stack",style:"gap:6px"},
         h("div",{class:"eaten-k"}, h("b",{text:String(Math.round(tt.kcal))}), " / "+(o.kcal||0)+" kcal"),
         h("div",{class:"bar"}, h("i",{style:"width:"+pct+"%"})),
-        h("div",{class:"eaten-m",text:`P ${Math.round(tt.p)}/${o.p||0} · G ${Math.round(tt.g)}/${o.g||0} · C ${Math.round(tt.c)}/${o.c||0} g`})),
+        S.owner ? h("div",{class:"eaten-m",text:`P ${Math.round(tt.p)}/${o.p||0} · G ${Math.round(tt.g)}/${o.g||0} · C ${Math.round(tt.c)}/${o.c||0} g`}) : null),
       (ver||modo==="alumno") ? semanaNode(modo==="alumno"?S.myChecks:(S.rawChecks||{})[c.uid]) : null,
       modo==="alumno" && hechos && !n ? h("span",{class:"muted",style:"font-size:12px",text:"Tocá cada alimento a medida que lo comés. Ramiro ve tu cumplimiento."}) : null,
       h("div",{id:"chk-msg",class:"save"})));
@@ -1525,7 +1538,7 @@ function tabDieta(c){
           else if (!i._fuera && swDe(i)) accion=h("button",{class:"swbtn"+(abierto?" on":""),type:"button","aria-expanded":String(abierto),"aria-controls":"swp-"+key,
             "aria-label":"Cambiar "+i.alimento+" por otro alimento", onclick:ev=>{ stop(ev); S.swOpen=abierto?null:key; rerender(); }},"⇄ Cambiar");
         }
-        const mac=h("div",{class:"m"}, h("span",{text: i._fuera ? "—" : `P ${fmt(i.p)} · G ${fmt(i.g)} · C ${fmt(i.c)}`}), accion);
+        const mac=h("div",{class:"m"}, S.owner ? h("span",{text: i._fuera ? "—" : `P ${fmt(i.p)} · G ${fmt(i.g)} · C ${fmt(i.c)}`}) : null, accion);
         let fila;
         if (ver && !i._fuera) fila=h("div",{class:"food chk ver"+(on?" on":"")}, h("span",{class:"vchk"+(on?" on":""),"aria-label":on?"Comido":"Sin marcar",text:on?"✓":""}), h("div",{class:"n"}, ...nombre, extra), mac);
         else if (!usaChk || i._fuera) fila=h("div",{class:"food"+(i._fuera?" fuera":"")}, h("div",{class:"n"}, ...nombre, extra), mac);
@@ -2457,6 +2470,9 @@ body.dzopen{overflow:hidden}
 .dzfin li{display:flex;justify-content:space-between;gap:10px;font-size:14px;background:rgba(0,0,0,.22);border-radius:8px;padding:8px 10px;font-variant-numeric:tabular-nums}
 .dzfin li b{white-space:nowrap}
 .dzfin p{margin:0;font-size:14px;color:rgba(255,255,255,.85)}
+.dzfin .ffrase{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.2;color:#fff;text-transform:none}
+.dzfin .ffrase small{font-family:var(--body);font-weight:600;font-size:12px;opacity:.75}
+.dzfin .fwa{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;background:#fff;color:#1f7a4a;font-weight:700;font-size:15px;text-decoration:none;text-align:center;padding:8px 12px}
 .dzapp.resumen #dzEx,.dzapp.resumen .dzsets,.dzapp.resumen .dzclock,.dzapp.resumen #dzPresWrap,.dzapp.resumen #dzAdj,.dzapp.resumen #dzCtl,.dzapp.resumen #dzLog,.dzapp.resumen .dzfoot,.dzapp.resumen #dzNav,.dzapp.resumen #dzSigEj{display:none!important}
 .dzexprev{display:flex;flex-direction:column;gap:2px;margin-top:4px;padding:8px 10px;border-radius:8px;background:rgba(239,74,64,.10);border:1px solid rgba(239,74,64,.28)}
 .dzexprev span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
@@ -3035,7 +3051,16 @@ function finPaint(){
     <div class="fg4"><div><b>${r.min?r.min+"'":"–"}</b><small>Tiempo</small></div><div><b>${r.ej||0}</b><small>Ejercicios</small></div>
     <div><b>${r.series||0}</b><small>Series</small></div><div><b>${(r.vol||0).toLocaleString("es-AR")}</b><small>Kilos movidos</small></div></div>`+
     (r.recs&&r.recs.length?`<span class="fk">Récords de hoy</span><ul>${r.recs.map(x=>`<li><span>${esc(x.nombre)}</span><b>${esc(kgTxt(x.kg))} kg <small style="opacity:.75">(antes ${esc(kgTxt(x.antes))})</small></b></li>`).join("")}</ul>`
-      :`<p>Hoy no hubo récords de peso. Constancia: la próxima se sube.</p>`);
+      :`<p>Hoy no hubo récords de peso. Constancia: la próxima se sube.</p>`)+
+    (r.frase?`<p class="ffrase">“${esc(r.frase)}”<br><small>— Ramiro</small></p>`:"");
+  if (r.wa && r.alumno){
+    const t=["💪 ¡Terminé el entreno de hoy!"+(r.dia?" ("+r.dia+")":""),
+      [r.min?"⏱ "+r.min+" min":"", r.ej?r.ej+" ejercicios":"", r.series?r.series+" series":"", r.vol?(r.vol).toLocaleString("es-AR")+" kg movidos":""].filter(Boolean).join(" · "),
+      ...(r.recs&&r.recs.length?["🏆 Récords: "+r.recs.map(x=>x.nombre+" "+kgTxt(x.kg)+" kg (antes "+kgTxt(x.antes)+")").join(", ")]:[]),
+      "— "+r.alumno].join("\n");
+    const a=document.createElement("a"); a.className="fwa"; a.target="_blank"; a.rel="noopener";
+    a.href=r.wa+"?text="+encodeURIComponent(t); a.textContent="Mandarle el resumen a Ramiro ↗"; f.append(a);
+  }
   mapPaint();
 }
 /* ===== navegación sin cortar el descanso ===== */
