@@ -2484,6 +2484,44 @@ body.dzopen{overflow:hidden}
 .dznext{font-size:13px;color:var(--muted);text-align:center;min-height:18px}
 .dznext b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.dzring .fg{transition:none}.dzflash{animation:none}}
+/* ===== modo entreno guiado: una sola indicación y un solo botón; lo que se usa poco va a «Más opciones» ===== */
+.dzahora,.dzobj,.dzmas,.dzopts{display:none}
+.dzapp.guiado{gap:12px}
+.dzapp.guiado .dzhead{order:0}.dzapp.guiado #dzMap{order:1}.dzapp.guiado #dzFin{order:2}.dzapp.guiado #dzEx{order:3}
+.dzapp.guiado #dzLog{order:4}.dzapp.guiado .dzclock{order:5}.dzapp.guiado #dzNext{order:6}.dzapp.guiado #dzAdj{order:7}
+.dzapp.guiado #dzBar{order:8}.dzapp.guiado #dzMas{order:9}.dzapp.guiado #dzOpts{order:10}
+.dzapp.guiado .dzsets{order:11}.dzapp.guiado #dzPresWrap{order:12}.dzapp.guiado #dzNav{order:13}.dzapp.guiado #dzCtl{order:14}
+.dzapp.guiado #dzTestBox{order:15}.dzapp.guiado .dzfoot{order:16}
+.dzapp.guiado:not(.mas) .dzsets,.dzapp.guiado:not(.mas) #dzPresWrap,.dzapp.guiado:not(.mas) #dzNav,.dzapp.guiado:not(.mas) #dzCtl,
+.dzapp.guiado:not(.mas) #dzTestBox,.dzapp.guiado:not(.mas) .dzfoot,.dzapp.guiado #dzSigEj,.dzapp.guiado #dzSkip{display:none!important}
+.dzapp.guiado #dzBar{grid-template-columns:minmax(0,1fr)}
+.dzapp.guiado #dzBar .dzmain{font-size:24px;min-height:72px}
+.dzapp.guiado.idle .dzclock{display:none}
+.dzapp.guiado.resting #dzHowBox,.dzapp.guiado.resting #dzExNota,.dzapp.guiado.working #dzHowBox,.dzapp.guiado.working #dzExNota,.dzapp.guiado.working #dzExInfo,.dzapp.guiado.working #dzObj{display:none!important}
+.dzapp.guiado.working .dzahora{font-size:24px}
+.dzapp.guiado.working .dzstate.top{display:none}
+.dzapp.guiado .dzobj{font-size:30px}
+.dzapp.guiado .dzclock{min-height:0;flex:none}
+.dzapp.guiado .dzring{width:min(56vw,220px)}
+.dzapp.guiado.resting .dzring{width:min(48vw,190px)}
+.dzapp.guiado.resting .dztime{font-size:clamp(48px,14vw,64px)}
+.dzapp.guiado.logging .dzring{width:100%;aspect-ratio:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 16px}
+.dzapp.guiado.logging .dzring svg{display:none}
+.dzapp.guiado.logging .dzcenter{position:static;flex-direction:row;justify-content:space-between;gap:12px}
+.dzapp.guiado.logging .dztime{font-size:44px}
+.dzapp.guiado.logging #dzSub{display:none}
+.dzapp.guiado.resting #dzExInfo,.dzapp.guiado.resting #dzOkEx{display:none!important}
+.dzapp.guiado .dzahora{display:block;font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);line-height:1.15}
+.dzapp.guiado.resting .dzahora{color:var(--ink)}
+.dzapp.guiado.ready .dzahora,.dzapp.guiado .dzahora.ok{color:var(--ok)}
+.dzapp.guiado.working .dzahora{color:var(--amber)}
+.dzapp.guiado .dzobj{display:block;font-family:var(--display);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;margin:2px 0}
+.dzapp.guiado .dzobj:empty{display:none}
+.dzapp.guiado .dzmas{display:block;align-self:center;background:none;border:0;padding:10px 14px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.dzapp.guiado.mas .dzopts{display:flex;flex-direction:column;gap:8px}
+.dzapp.guiado .dzopts .dzbtn{min-height:52px;font-size:16px;font-weight:700}
+.dzapp.guiado.resumen .dzmas,.dzapp.guiado.resumen .dzopts{display:none!important}
+.dzapp.guiado .dzhead #dzClose{min-height:40px;font-size:14px}
 </style>
 
 <button class="dzfab" id="dzFab" aria-label="Abrir reloj de descanso">
@@ -2500,8 +2538,10 @@ body.dzopen{overflow:hidden}
     <div class="dzmap" id="dzMap" hidden></div>
     <section class="dzfin" id="dzFin" hidden></section>
     <div class="dzex" id="dzEx" hidden>
+      <span class="dzahora" id="dzAhora" aria-live="polite"></span>
       <span class="dzlbl" id="dzExPos">Ejercicio 1 de 1</span>
       <b id="dzExName"></b>
+      <span class="dzobj" id="dzObj"></span>
       <small id="dzExInfo"></small>
       <small class="dzexnota" id="dzExNota" hidden></small>
       <div class="dzhow" id="dzHowBox" hidden><details id="dzHow"><summary>Cómo se hace</summary><p id="dzHowP"></p></details><a class="dzvid" id="dzVid" target="_blank" rel="noopener" hidden>▶ Ver video</a></div>
@@ -2568,6 +2608,10 @@ body.dzopen{overflow:hidden}
       <button class="dzmain" id="dzMain">Siguiente serie</button>
       <button class="dzsigej" id="dzSigEj" type="button">Siguiente ejercicio ⏭</button>
     </div>
+    <button class="dzmas" id="dzMas" type="button" aria-expanded="false">⋯ Más opciones</button>
+    <div class="dzopts" id="dzOpts">
+      <button class="dzbtn" id="dzSaltar" type="button">Saltear este ejercicio ⏭</button>
+    </div>
     <div class="dzfoot">
       <button class="dzlink dzson" id="dzSon" type="button"></button>
       <button class="dzlink" id="dzTest" type="button">🔈 Probar sonido</button>
@@ -2633,31 +2677,33 @@ function eventos(seg, seg2, marcas){
   return ev;
 }
 let waNodes=[];
+/* campana de largada (tipo ring de box): 3 golpes, cada uno con parciales inarmónicos que se apagan solos */
+const CAMP={f:1050, golpes:[0,.42,.84], parc:[[1,1,.95],[2,.45,.6],[2.76,.35,.42],[5.4,.16,.2]], dur:1.5};
+function campanaWA(st){ if(!ac) return; try{ for(const g0 of CAMP.golpes) for(const [r,amp,tau] of CAMP.parc){ const t=st+g0, o=ac.createOscillator(), g=ac.createGain();
+    o.type="sine"; o.frequency.value=CAMP.f*r; g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(.16*amp,t+.004); g.gain.exponentialRampToValueAtTime(.0005,t+Math.min(CAMP.dur,tau*5));
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t+CAMP.dur+.05); waNodes.push(o); } }catch(e){} }
 function programarWA(ev){
   audio(); if(!ac) return false; const t0=ac.currentTime+.05;
   try{ for(const e of ev){ const st=t0+e.t;
-    if(e.sil){ const o=ac.createOscillator(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain();
-      o.frequency.value=2850; l.frequency.value=32; lg.gain.value=170; l.connect(lg).connect(o.frequency);
-      g.gain.setValueAtTime(0,st); g.gain.linearRampToValueAtTime(.35,st+.02); g.gain.setValueAtTime(.35,st+.8); g.gain.linearRampToValueAtTime(0,st+.9);
-      o.connect(g).connect(ac.destination); o.start(st); l.start(st); o.stop(st+.92); l.stop(st+.92); waNodes.push(o,l); }
+    if(e.sil){ campanaWA(st); }
     else { const o=ac.createOscillator(), g=ac.createGain(); o.type="square"; o.frequency.value=e.f;
       g.gain.setValueAtTime(.0001,st); g.gain.linearRampToValueAtTime(.18,st+.005); g.gain.exponentialRampToValueAtTime(.001,st+e.d);
       o.connect(g).connect(ac.destination); o.start(st); o.stop(st+e.d+.02); waNodes.push(o); } } }catch(e){ return false; }
   return true;
 }
 function pista(seg, seg2, marcas){
-  const R=16000, n=Math.max(1,Math.round((seg+(seg2||0)+1.3)*R)), b=new ArrayBuffer(44+n), v=new DataView(b);
+  const R=16000, n=Math.max(1,Math.round((seg+(seg2||0)+2.6)*R)), b=new ArrayBuffer(44+n), v=new DataView(b);
   const w=(o,t)=>{ for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
   w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVE"); w(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
   v.setUint32(24,R,true); v.setUint32(28,R,true); v.setUint16(32,1,true); v.setUint16(34,8,true); w(36,"data"); v.setUint32(40,n,true);
   const a=new Uint8Array(b,44); a.fill(128);
   const tono=(t0,d,f)=>{ const i0=Math.round(t0*R), i1=Math.min(n,Math.round((t0+d)*R)); if(i0<0) return;
     for(let i=i0;i<i1;i++){ const t=(i-i0)/R, env=Math.min(1,t*200,(d-t)*60); a[i]=128+Math.round(Math.sin(2*Math.PI*f*t)>=0?100*env:-100*env); } };
-  /* silbato de árbitro: tono agudo con el trino de la bolita */
-  const silbato=(t0)=>{ const d=.9, i0=Math.round(t0*R), i1=Math.min(n,Math.round((t0+d)*R)); if(i0<0) return; let ph=0;
-    for(let i=i0;i<i1;i++){ const t=(i-i0)/R, tr=Math.sin(2*Math.PI*32*t), f=2850+170*tr; ph+=2*Math.PI*f/R;
-      const env=Math.min(1,t*60,(d-t)*14), am=.72+.28*tr, ns=(Math.random()*2-1)*.12;
-      a[i]=Math.max(0,Math.min(255,128+Math.round(118*env*(am*Math.sin(ph)+ns)))); } };
+  /* campana de largada: 3 golpes con parciales que se apagan (se suman sobre lo que ya hay) */
+  const silbato=(t0)=>{ const i0=Math.round(t0*R); if(i0<0) return; const i1=Math.min(n,Math.round((t0+CAMP.golpes[2]+CAMP.dur)*R)), buf=new Float32Array(Math.max(0,i1-i0));
+    for(const g0 of CAMP.golpes) for(const [r,amp,tau] of CAMP.parc){ const j0=Math.round(g0*R);
+      for(let j=j0;j<buf.length;j++){ const t=(j-j0)/R; if(t>CAMP.dur) break; buf[j]+=amp*Math.min(1,t*250)*Math.exp(-t/tau)*Math.sin(2*Math.PI*CAMP.f*r*t); } }
+    for(let j=0;j<buf.length;j++) a[i0+j]=Math.max(0,Math.min(255,a[i0+j]+Math.round(52*buf[j]))); };
   for (const m of (marcas||[])){ if(m.lado){ tono(m.t,.1,1320); tono(m.t+.18,.1,1320); } else tono(m.t,.12,990); }
   for(let k=3;k>=1;k--) tono(seg-k, .16, k===1?1100:880);
   if (seg2){ tono(seg, .55, 1320); for(let k=3;k>=1;k--) if(seg2-k>1) tono(seg+seg2-k, .16, k===1?1100:880); silbato(seg+seg2); }
@@ -2677,10 +2723,7 @@ function pistaPlay(){
 function pistaStop(){ trkOn=false; for(const n of waNodes){ try{ n.stop(); }catch(e){} } waNodes=[]; try{ trk.pause(); }catch(e){} if(trkUrl){ try{URL.revokeObjectURL(trkUrl)}catch(e){} trkUrl=null; } }
 function audio(){ if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(ac&&ac.state!=="running"&&ac.state!=="closed"){ try{ const r=ac.resume(); r&&r.catch&&r.catch(()=>{}); }catch(e){} } }
 function beep(f,d){ if(!ac) return; try{const o=ac.createOscillator(),g=ac.createGain(); o.frequency.value=f; o.type="square"; g.gain.setValueAtTime(.18,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d); o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+d);}catch(e){} }
-function silbatoWA(){ if(!ac) return; try{ const t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain(), am=ac.createGain();
-  o.frequency.value=2850; l.frequency.value=32; lg.gain.value=170; l.connect(lg).connect(o.frequency);
-  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.02); g.gain.setValueAtTime(.35,t+.8); g.gain.linearRampToValueAtTime(0,t+.9);
-  o.connect(g).connect(ac.destination); o.start(t); l.start(t); o.stop(t+.92); l.stop(t+.92); }catch(e){} }
+function silbatoWA(){ if(!ac) return; campanaWA(ac.currentTime+.02); }
 function buzz(p){ try{navigator.vibrate&&navigator.vibrate(p)}catch(e){} }
 let lock=null;
 async function awake(){ try{ if(!lock&&navigator.wakeLock){ lock=await navigator.wakeLock.request("screen"); lock.addEventListener("release",()=>lock=null);} }catch(e){} }
@@ -2694,6 +2737,35 @@ document.addEventListener("pointerdown",()=>{ if(ac&&ac.state!=="running") audio
 /* marca el descanso que está corriendo (el del ejercicio recién hecho) o, si no corre, el del ejercicio actual */
 function presets(){ const sel=S.mode==="rest"?S.len:S.rest; $("dzPresets").innerHTML=PRESETS.map(p=>`<button class="dzchip" data-p="${p}" aria-pressed="${p===sel}">${restTxt(p)}</button>`).join(""); }
 let lastBeep=null;
+/* repeticiones de la serie que toca: "8 · 4 · 2" → la que corresponde; "10-12" → "10-12 reps" */
+function repsSerie(q, i){
+  if(!q) return ""; const r=String(q.reps||"").trim(); if(!r) return "";
+  const pl=planTrabajo(q, i); if(pl && pl.segs.length>1) return pl.txt.replace(" × "," sostenes de ");
+  const partes=r.split(/\s*[·,]\s*/).filter(Boolean), x=partes.length>1 ? partes[Math.min(i,partes.length-1)] : r;
+  return /^\d+(\s*[-–]\s*\d+)?$/.test(x) ? x+" reps" : x;
+}
+function guiadoPaint(q, nx, yaHecho, sinDesc, tw, next){
+  const app=$("dzApp"), g=!!(S.entreno && q);
+  app.classList.toggle("guiado", g);
+  app.classList.toggle("idle", S.mode==="idle");
+  if(!g){ app.classList.remove("mas"); return; }
+  const tot=S.total, a=$("dzAhora"), ob=$("dzObj");
+  let ah="", ok=false, pos=(q.bloque?q.bloque+" · ":"")+"ejercicio "+(S.idx+1)+" de "+S.queue.length;
+  if(yaHecho){ ah="✓ Ejercicio completo"; ok=true; }
+  else if(S.paused) ah="En pausa";
+  else if(S.mode==="rest" && S.justChanged && S.prevQ){ ah="✓ Terminaste "+S.prevQ.nombre.toLowerCase()+" · descansá"; pos="Lo que sigue · "+pos; }
+  else if(S.mode==="rest") ah="Descansá · después la serie "+next+" de "+tot;
+  else if(S.mode==="ready") ah="¡Vamos! Serie "+next+" de "+tot;
+  else if(S.mode==="work"){ const tr=S.segs&&S.segs.length>1?tramo(Date.now()):null; ah=tr&&tr.s.lbl ? tr.s.lbl+" · serie "+next+" de "+tot : "Serie "+next+" de "+tot+" · ¡dale!"; }
+  else if(sinDesc) ah=S.justChanged&&S.prevQ ? "✓ Listo · ahora este" : "Ahora";
+  else ah="Ahora · serie "+next+" de "+tot;
+  a.textContent=ah; a.classList.toggle("ok",ok);
+  $("dzExPos").textContent=pos;
+  ob.textContent = yaHecho||S.mode==="finished" ? "" : sinDesc ? (q.series>1?q.series+" × ":"")+repsSerie(q,0) : repsSerie(q, Math.min(S.done, tot-1));
+  const sal=$("dzSaltar"), se=$("dzSigEj"); sal.hidden=se.hidden; sal.textContent=se.textContent.replace("Siguiente ejercicio","Saltear este ejercicio");
+  const nt=$("dzNext");
+  if(S.mode==="rest" && S.justChanged && S.prevQ) nt.textContent="Cuando termine el descanso arrancás con este ejercicio.";
+}
 function render(){
   const app=$("dzApp");
   app.classList.toggle("resting",S.mode==="rest");
@@ -2738,7 +2810,15 @@ function render(){
   if(q && S.justChanged && S.mode==="rest"){ nt.append("Pasaste al siguiente ejercicio"); }
   else if(nx && S.done===S.total-1 && S.mode!=="finished"){ nt.append("Después: ",Object.assign(document.createElement("b"),{textContent:nx.nombre})); }
   if(yaHecho){ $("dzState").textContent="Ejercicio completo"; $("dzTime").textContent="✓"; $("dzSub").textContent=S.total+" de "+S.total+" series"; }
+  guiadoPaint(q, nx, yaHecho, sinDesc, tw, next);
   const m=$("dzMain"); if(yaHecho){ m.textContent=nx?"Siguiente: "+nx.nombre:"Ver resumen"; m.classList.add("ok"); } else m.textContent=S.mode==="finished"?(S.resumen?"Cerrar":q?"Terminaste el día":"Siguiente ejercicio"):S.mode==="work"?"Terminé antes":tw?"▶ Empezar serie "+next+" · "+(tw<60?restTxt(tw):fmt(tw)):sinDesc&&S.mode!=="rest"?"✓ Hecho · siguiente":"Siguiente serie"; m.classList.toggle("ok",S.mode==="finished"||yaHecho);
+  if(S.entreno && !yaHecho && !S.resumen){
+    /* textos claros del botón principal en el modo entreno */
+    if(S.mode==="rest") m.textContent="Listo, empiezo · serie "+next;
+    else if(S.mode==="ready") m.textContent="✓ Terminé la serie "+next;
+    else if(S.mode==="idle" && !tw && !sinDesc) m.textContent="✓ Terminé la serie "+next;
+    else if(S.mode==="idle" && sinDesc) m.textContent=nx?"✓ Listo · siguiente ejercicio":"✓ Listo · terminar";
+  }
   navPaint(nx);
   const fab=$("dzFab");
   /* en modo edición la barra de Guardar ocupa el borde de abajo: el botón flotante se esconde */
@@ -2755,12 +2835,12 @@ function tick(){
     if(sec<=3&&sec>0&&lastBeep!==sec){ lastBeep=sec; if(!trkOn){ audio(); beep(sec===1?1100:880,.15); } buzz(sec===1?250:120); haptic(); }
     if(left<=0){ if(!trkOn) beep(1320,.5); buzz([300,120,300]); haptic();
       const fin=S.wEnd, sigue=!!S.wRest; cerrarSerie(fin, S.wRest||S.rest, false);
-      if(!sigue||S.mode!=="rest") setTimeout(pistaStop,900); }
+      if(!sigue||S.mode!=="rest") setTimeout(pistaStop,2600); }
   }
   if(S.mode==="rest"){
     const left=(S.endAt-Date.now())/1000, sec=Math.ceil(left);
     if(sec<=3&&sec>0&&lastBeep!==sec){ lastBeep=sec; if(!trkOn){ audio(); beep(sec===1?1100:880,.15); } buzz(sec===1?250:120); haptic(); }
-    if(left<=0){ S.mode="ready"; presets(); if(!trkOn) silbatoWA(); setTimeout(pistaStop,1300); buzz([300,120,300,120,300]); haptic(); setTimeout(haptic,200); setTimeout(haptic,400); const a=$("dzApp"); a.classList.remove("dzflash"); void a.offsetWidth; a.classList.add("dzflash"); }
+    if(left<=0){ S.mode="ready"; presets(); if(!trkOn) silbatoWA(); setTimeout(pistaStop,2600); buzz([400,150,400,150,400]); haptic(); setTimeout(haptic,420); setTimeout(haptic,840); const a=$("dzApp"); a.classList.remove("dzflash"); void a.offsetWidth; a.classList.add("dzflash"); }
   }
   render();
 }
@@ -2793,7 +2873,7 @@ function cerrarSerie(desde, len, conPista){
   S.done=Math.min(S.total,S.done+1); buzz(40);
   if(S.done>=S.total && S.queue.length){
     S.fin[S.idx]=true; window.__dzMarca&&window.__dzMarca(S.queue[S.idx]); const n=sigIdx();
-    if(n>=0){ cargar(n); S.justChanged=true; logPaint(false); }
+    if(n>=0){ S.prevQ=S.queue[S.idx]; cargar(n); S.justChanged=true; logPaint(false); }
     else { terminarEntreno(); return; }
   } else if(S.done>=S.total){ S.mode="finished"; pistaStop(); render(); return; }
   S.len=len; S.endAt=desde+len*1000; S.mode="rest"; lastBeep=null; presets(); if(conPista) pistaPlay(); render();
@@ -2807,6 +2887,7 @@ $("dzMain").onclick=()=>{
   audio(); awake(); despausar();
   if(S.mode==="finished"){ if(S.queue.length){ S.queue=[]; S.idx=0; S.entreno=false; S.resumen=null; $("dzFin").hidden=true; mapPaint(); close(); } S.done=0; S.mode="idle"; render(); return; }
   if(S.mode==="work"){ cerrarSerie(Date.now(), S.rest, true); return; }
+  if(S.entreno && S.mode==="rest"){ S.paused=false; S.mode="ready"; pistaStop(); presets(); render(); return; }
   if(S.mode==="idle" && S.fin && S.fin[S.idx]){ const n=sigIdx(); if(n<0) terminarEntreno(); else { cargar(n); S.justChanged=false; logPaint(false); render(); } return; }
   { const q=S.queue[S.idx]; if(q && !q.rest && !trabajoAct()){ hechoSinDescanso(); return; } }
   if(trabajoAct()){ empezarTrabajo(); return; }
@@ -2822,7 +2903,7 @@ function despausar(){ if(!S.paused) return; const d=Date.now()-S.pausaEn; S.paus
 $("dzOkEx").onclick=()=>{ audio(); awake(); despausar(); const q=S.queue[S.idx]; if(!q) return;
   window.__dzOk&&window.__dzOk(q); S.fin[S.idx]=true; S.done=S.total; const n=sigIdx();
   if(n<0){ terminarEntreno(); return; }
-  const len=q.rest; cargar(n); S.justChanged=true; logPaint(false);
+  const len=q.rest; S.prevQ=q; cargar(n); S.justChanged=true; logPaint(false);
   if(len){ S.len=len; S.endAt=Date.now()+len*1000; S.mode="rest"; lastBeep=null; presets(); pistaPlay(); } else S.mode="idle";
   render(); };
 function sonPaint(){ $("dzSon").innerHTML = modoSon==="musica"
@@ -2881,7 +2962,7 @@ window.dzCargar=(cola,i)=>{ S.queue=cola.slice(); S.fin={}; S.hechas={};
   const diaListo=cola.some(q=>q.registro) && cola.every(q=>q.hecho||!q.registro);
   cola.forEach((q,k)=>{ if(q.hecho||diaListo) S.fin[k]=true; }); S.entreno=cola.length>1; S.t0=Date.now(); S.resumen=null; S.paused=false; pistaStop(); S.log=null; logPaint(true); cargar(i); S.mode="idle"; S.justChanged=false; lastBeep=null; open(); };
 /* modo entreno: arranca el día desde el reloj; los ejercicios ya completos quedan marcados */
-window.dzEntreno=(cola,i)=>{ window.dzCargar(cola,i); S.entreno=true;
+window.dzEntreno=(cola,i)=>{ window.dzCargar(cola,i); S.entreno=true; audio(); silbatoWA(); buzz([200,100,200]); haptic();
   /* si ya están hechos todos los ejercicios con registro, el entreno está completo: se ve el resumen */
   if (cola.length && cola.every((q,k)=>S.fin[k])){ S.t0=null; terminarEntreno(); return; }
   exPaint(); render(); };
@@ -2893,7 +2974,7 @@ function terminarEntreno(){
   render();
 }
 /* ejercicio sin descanso (movilidad, activación): "Hecho" y pasa al siguiente */
-function hechoSinDescanso(){ S.fin[S.idx]=true; window.__dzMarca&&window.__dzMarca(S.queue[S.idx]); const n=sigIdx(); if(n<0){ terminarEntreno(); return; } cargar(n); S.mode="idle"; S.justChanged=true; logPaint(false); render(); }
+function hechoSinDescanso(){ S.fin[S.idx]=true; window.__dzMarca&&window.__dzMarca(S.queue[S.idx]); const n=sigIdx(); if(n<0){ terminarEntreno(); return; } S.prevQ=S.queue[S.idx]; cargar(n); S.mode="idle"; S.justChanged=true; logPaint(false); render(); }
 /* tocar un ejercicio en el mapa: va ahí sin cortar el descanso; si ya habías hecho series, retoma donde lo dejaste */
 function irA(i){ if(i<0||i>=S.queue.length) return;
   if(i===S.idx&&!S.resumen) return;
@@ -3002,6 +3083,10 @@ $("dzRestart").onclick=()=>{ audio(); awake();
   const len=S.rest||S.len||60;
   S.paused=false; S.len=len; S.endAt=Date.now()+len*1000; S.mode="rest"; lastBeep=null; presets(); pistaPlay(); render();
 };
+$("dzMas").onclick=()=>{ const a=$("dzApp"), on=!a.classList.contains("mas"); a.classList.toggle("mas",on);
+  $("dzMas").setAttribute("aria-expanded",String(on)); $("dzMas").textContent=on?"Ocultar opciones":"⋯ Más opciones";
+  if(on) requestAnimationFrame(()=>{ try{ $("dzMas").scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){} }); };
+$("dzSaltar").onclick=()=>$("dzSigEj").click();
 presets(); render();
 })();
 </script>
