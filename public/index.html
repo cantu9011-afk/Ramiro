@@ -184,6 +184,7 @@ button{font:inherit;color:inherit}
 .pinfo .pleg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .pinfo .pleg div{display:flex;flex-direction:column;gap:2px;font-size:13px}
 .pinfo .pleg span{color:var(--muted);font-size:12px}
+.in-ver{margin:14px 0 0;font-size:11px;letter-spacing:.08em;color:var(--muted);opacity:.7;text-align:center}
 .daynote .notak{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:4px}
 .prevciclo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .prevciclo .pck{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
@@ -870,7 +871,8 @@ function viewInicio(){
     cta(ctaTxt),
     h("div",{class:"in-contacto"},
       h("a",{href:"https://instagram.com/"+MARCA.instagram,target:"_blank",rel:"noopener"},"Instagram @"+MARCA.instagram),
-      h("a",{href:MARCA.waLink,target:"_blank",rel:"noopener"},"WhatsApp "+MARCA.whatsapp))));
+      h("a",{href:MARCA.waLink,target:"_blank",rel:"noopener"},"WhatsApp "+MARCA.whatsapp)),
+    h("p",{class:"in-ver",text:"Versión "+VERSION_APP})));
   return sec;
 }
 function chkChip(c){
@@ -890,6 +892,7 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
+const VERSION_APP="19/11/2026 · 7";
 const ENCUESTA_URL="https://docs.google.com/forms/d/e/1FAIpQLSf-6M6bl22LA1gvCM_072FO6unD_L5hPj-fZW3NiHEcWN1mZw/viewform";
 function viewPicker(){
   /* orden dentro de cada sección: activos, los que no pagan cuota (Julia), los en pausa y al final la ficha propia */
@@ -2581,6 +2584,8 @@ body.dzopen{overflow:hidden}
 .dzrep{height:52px;min-width:52px;max-width:112px;border-radius:10px;border:1px solid rgba(239,74,64,.5);background:transparent;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;line-height:1.15;padding:4px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
 .dzrep b{font-size:20px;line-height:1}
 .dzlog-st{font-size:12px;min-height:16px;color:var(--ok)}
+.dzlog-av{font-size:13px;font-weight:600;line-height:1.35;color:#1c191a;background:var(--amber);border-radius:10px;padding:8px 10px}
+.dzlog-av[hidden]{display:none}
 .dznext{font-size:13px;color:var(--muted);text-align:center;min-height:18px}
 .dznext b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.dzring .fg{transition:none}.dzflash{animation:none}}
@@ -2688,6 +2693,7 @@ body.dzopen{overflow:hidden}
         <button class="dzrep" id="dzRep" type="button" aria-label="Repetir lo de la vez anterior">↺</button>
       </div>
       <div class="dzlog-st" id="dzLogSt" aria-live="polite"></div>
+      <div class="dzlog-av" id="dzLogAv" aria-live="polite" hidden></div>
     </div>
     <section class="dzclock" aria-live="polite">
       <div class="dzring">
@@ -3083,8 +3089,15 @@ function logPaint(reset){
   rp.innerHTML="<b>↺</b><span>"+esc((v.pkg||"–")+" kg × "+(v.pr||"–"))+"</span>";
   rp.setAttribute("aria-label","Igual que la vez anterior: "+(v.pkg||"–")+" kilos por "+(v.pr||"–"));
   if (reset) $("dzLogSt").textContent="";
+  rangoAviso(r.value);
 }
-function logPut(campo, val){ if(!S.log||!window.__dzAnotar) return; window.__dzAnotar(S.log.q, S.log.i, campo, val, $("dzLogSt")); }
+function logPut(campo, val){ if(!S.log||!window.__dzAnotar) return; window.__dzAnotar(S.log.q, S.log.i, campo, val, $("dzLogSt")); if(campo==="r") rangoAviso(val); }
+/* si anota más repeticiones que el tope del rango: cortar ahí y subir el peso la próxima (cantidad de calidad) */
+function topeReps(q, i){ const partes=String(q.reps||"").split(/\s*[·,]\s*/).filter(Boolean), x=partes.length>1?partes[Math.min(i,partes.length-1)]:String(q.reps||"");
+  if(/["”″]|seg|min|lado.*\d+\s*s/i.test(x)) return 0; const ns=(x.match(/\d+/g)||[]).map(Number); return ns.length?Math.max(...ns):0; }
+function rangoAviso(val){ const av=$("dzLogAv"), L=S.log, r=parseInt(val,10), tope=L?topeReps(L.q,L.i):0;
+  if(!L || !tope || !(r>tope)){ av.hidden=true; av.textContent=""; return; }
+  av.hidden=false; av.textContent="Pasaste el rango ("+L.q.reps+"). La técnica manda: cortá en "+tope+" y la próxima subí el peso."; }
 $("dzKg").addEventListener("input",e=>logPut("kg",e.target.value.trim()));
 $("dzR").addEventListener("input",e=>logPut("r",e.target.value.trim()));
 $("dzRep").onclick=()=>{ if(!S.log) return; const v=window.__dzSerie(S.log.q,S.log.i); if(v.pkg){ $("dzKg").value=v.pkg; logPut("kg",v.pkg);} if(v.pr){ $("dzR").value=v.pr; logPut("r",v.pr);} };
