@@ -892,7 +892,7 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
-const VERSION_APP="19/11/2026 · 7";
+const VERSION_APP="19/11/2026 · 8";
 const ENCUESTA_URL="https://docs.google.com/forms/d/e/1FAIpQLSf-6M6bl22LA1gvCM_072FO6unD_L5hPj-fZW3NiHEcWN1mZw/viewform";
 function viewPicker(){
   /* orden dentro de cada sección: activos, los que no pagan cuota (Julia), los en pausa y al final la ficha propia */
@@ -2636,6 +2636,7 @@ body.dzopen{overflow:hidden}
 .dzapp.guiado.logging .dztime{font-size:44px}
 .dzapp.guiado.logging #dzSub{display:none}
 .dzapp.guiado.resting #dzExInfo,.dzapp.guiado.resting #dzOkEx{display:none!important}
+.dzapp.guiado.ready #dzHowBox,.dzapp.guiado.ready #dzExNota,.dzapp.guiado.ready #dzExInfo{display:none!important}
 .dzapp.guiado .dzahora{display:block;font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);line-height:1.15}
 .dzapp.guiado.resting .dzahora{color:var(--ink)}
 .dzapp.guiado.ready .dzahora,.dzapp.guiado .dzahora.ok{color:var(--ok)}
@@ -2944,8 +2945,10 @@ function render(){
   if(S.porCerrar) m.textContent="Ver resumen ✓";
   if(S.entreno && !yaHecho && !S.resumen && !S.porCerrar){
     /* textos claros del botón principal en el modo entreno */
-    if(S.mode==="rest") m.textContent="Listo, empiezo · serie "+next;
-    else if(S.mode==="ready") m.textContent="✓ Terminé la serie "+next;
+    const tTxt = tw ? (tw<60?restTxt(tw):fmt(tw)) : "";
+    if(S.mode==="rest") m.textContent = tw ? "▶ Empezar serie "+next+" ya" : "Listo, empiezo · serie "+next;
+    else if(S.mode==="ready") m.textContent = tw ? "▶ Empezar serie "+next+" · "+tTxt : "✓ Terminé la serie "+next;
+    else if(S.mode==="work") m.textContent = "Terminar la serie ahora";
     else if(S.mode==="idle" && !tw && !sinDesc) m.textContent="✓ Terminé la serie "+next;
     else if(S.mode==="idle" && sinDesc) m.textContent=nx?"✓ Listo · siguiente ejercicio":"✓ Listo · terminar";
   }
@@ -3022,7 +3025,9 @@ $("dzMain").onclick=()=>{
   if(S.mode==="finished" && S.porCerrar){ S.porCerrar=false; S.log=null; logPaint(true); terminarEntreno(); return; }
   if(S.mode==="finished"){ if(S.queue.length){ S.queue=[]; S.idx=0; S.entreno=false; S.resumen=null; $("dzFin").hidden=true; mapPaint(); close(); } S.done=0; S.mode="idle"; render(); return; }
   if(S.mode==="work"){ cerrarSerie(Date.now(), S.rest, true); return; }
-  if(S.entreno && S.mode==="rest"){ S.paused=false; S.mode="ready"; pistaStop(); presets(); render(); return; }
+  if(S.entreno && S.mode==="rest"){ S.paused=false; S.mode="ready"; pistaStop(); presets();
+    if(trabajoAct()){ empezarTrabajo(); return; } /* ejercicio por tiempo: corta el descanso y arranca la serie */
+    render(); return; }
   if(S.mode==="idle" && S.fin && S.fin[S.idx]){ const n=sigIdx(); if(n<0) terminarEntreno(); else { cargar(n); S.justChanged=false; logPaint(false); render(); } return; }
   { const q=S.queue[S.idx]; if(q && !q.rest && !trabajoAct()){ hechoSinDescanso(); return; } }
   if(trabajoAct()){ empezarTrabajo(); return; }
