@@ -6,7 +6,8 @@
     "build": "esbuild src/adapter.js --bundle --minify --format=iife --target=es2019 --outfile=public/js/firebase-adapter.js",
     "importar": "node scripts/importar.mjs",
     "probar": "firebase emulators:start --project demo-ramiro",
-    "publicar": "npm run build && firebase deploy"
+    "publicar": "npm run build && npm run version && firebase deploy --only hosting",
+    "version": "node scripts/version.mjs"
   },
   "dependencies": {
     "firebase": "13.0.0"

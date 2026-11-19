@@ -185,6 +185,11 @@ button{font:inherit;color:inherit}
 .pinfo .pleg div{display:flex;flex-direction:column;gap:2px;font-size:13px}
 .pinfo .pleg span{color:var(--muted);font-size:12px}
 .in-ver{margin:14px 0 0;font-size:11px;letter-spacing:.08em;color:var(--muted);opacity:.7;text-align:center}
+.opcent{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding-top:14px;border-top:1px solid var(--line)}
+.opsons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opson{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.opson b{font-size:14px}.opson span{font-size:12px;color:var(--muted);line-height:1.3}
+.opson.on{border-color:var(--red);background:var(--red-soft)}
 .daynote .notak{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:4px}
 .prevciclo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .prevciclo .pck{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
@@ -892,7 +897,24 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
-const VERSION_APP="19/11/2026 · 8";
+const VERSION_APP="19/11/2026 11:01";
+/* actualización automática: al volver a la app (y cada 10 min) se fija si hay una versión publicada más nueva.
+   Si la hay, recarga sola, salvo en medio de un entreno o mientras se escribe/edita: ahí espera. */
+(function(){
+  let pendiente=false;
+  const ocupado=()=>{ const sh=document.getElementById("dzSheet"), ae=document.activeElement;
+    return (sh && !sh.hidden) || S.editing || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)); };
+  const recargar=()=>{ if(ocupado()){ pendiente=true; return; } try{ sessionStorage.setItem("rc-actualizada","1"); }catch(e){} location.reload(); };
+  async function revisar(){
+    if(navigator.onLine===false) return;
+    try{ const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const j=await r.json();
+      if(j && j.v && j.v!==VERSION_APP) recargar(); }catch(e){}
+  }
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") revisar(); });
+  setInterval(()=>{ if(pendiente && !ocupado()) recargar(); else if(document.visibilityState==="visible") revisar(); }, 10*60*1000);
+  setInterval(()=>{ if(pendiente && !ocupado()) recargar(); }, 15*1000);
+  setTimeout(revisar, 4000);
+})();
 const ENCUESTA_URL="https://docs.google.com/forms/d/e/1FAIpQLSf-6M6bl22LA1gvCM_072FO6unD_L5hPj-fZW3NiHEcWN1mZw/viewform";
 function viewPicker(){
   /* orden dentro de cada sección: activos, los que no pagan cuota (Julia), los en pausa y al final la ficha propia */
@@ -1182,11 +1204,17 @@ function tabRutina(c){
     }
     wrap.append(blk);
   }
+  if (window.__dzModoSon) wrap.append(opcionesEntreno());
   if (S.justDone && diaCompleto(dia, sk) && !S.festejado[sk]){ S.festejado[sk]=true; setTimeout(fiesta, 250); }
   if (S.justDone){ const k=S.justDone; S.justDone=null;
     requestAnimationFrame(()=>{ const cards=[...wrap.querySelectorAll(".ex")], i=cards.findIndex(x=>x.dataset.k===k);
       const sig=cards.slice(i+1).find(x=>!x.classList.contains("done")); if (sig) sig.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"}); }); }
   return wrap;
+}
+function opcionesEntreno(){
+  const m=window.__dzModoSon(), op=(k,t,d)=>h("button",{class:"opson"+(m===k?" on":""),type:"button","aria-pressed":String(m===k),onclick:()=>{ window.__dzSetSon(k); rerender(); }}, h("b",{text:t}), h("span",{text:d}));
+  return h("div",{class:"opcent"}, h("span",{class:"eyebrow",text:"Opciones del entreno · sonido"}),
+    h("div",{class:"opsons"}, op("musica","Suave","No corta tu música. Con el iPhone en silencio no suena."), op("fuerte","Fuerte","Suena aunque el iPhone esté en silencio. Pausa la música.")));
 }
 /* ===== experiencia del alumno: hoy, récords y festejo ===== */
 S.festejado={};
@@ -3052,6 +3080,9 @@ function sonPaint(){ $("dzSon").innerHTML = modoSon==="musica"
 $("dzSon").onclick=()=>{ modoSon = modoSon==="musica" ? "fuerte" : "musica"; try{ localStorage.setItem("dz-sonido",modoSon); }catch(e){}
   sonPaint(); if((S.mode==="rest"||S.mode==="work")&&!S.paused){ lastBeep=null; pistaPlay(); } else { pistaStop(); sesionAudio(); } };
 sonPaint();
+/* opciones del entreno (se eligen desde la rutina) */
+window.__dzModoSon=()=>modoSon;
+window.__dzSetSon=m=>{ if(m===modoSon) { audio(); try{ m==="musica"?silbatoWA():null; }catch(e){} return; } $("dzSon").click(); audio(); };
 /* prueba de sonido: A = pitido grave enseguida (modo con música); B = 3 pitidos agudos al segundo y medio (modo fuerte) */
 $("dzTest").onclick=()=>{
   sesionAudio(); audio(); let estA="sin AudioContext";
