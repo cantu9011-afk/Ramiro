@@ -2585,15 +2585,35 @@ body.dzopen{overflow:hidden}
 .dznext b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.dzring .fg{transition:none}.dzflash{animation:none}}
 /* ===== modo entreno guiado: una sola indicación y un solo botón; lo que se usa poco va a «Más opciones» ===== */
-.dzahora,.dzobj,.dzmas,.dzopts{display:none}
+.dzahora,.dzobj,.dzquick{display:none}
 .dzapp.guiado{gap:12px}
 .dzapp.guiado .dzhead{order:0}.dzapp.guiado #dzMap{order:1}.dzapp.guiado #dzFin{order:2}.dzapp.guiado #dzEx{order:3}
 .dzapp.guiado #dzLog{order:4}.dzapp.guiado .dzclock{order:5}.dzapp.guiado #dzNext{order:6}.dzapp.guiado #dzAdj{order:7}
-.dzapp.guiado #dzBar{order:8}.dzapp.guiado #dzMas{order:9}.dzapp.guiado #dzOpts{order:10}
+.dzapp.guiado #dzBar{order:8}.dzapp.guiado #dzQuick{order:9}
 .dzapp.guiado .dzsets{order:11}.dzapp.guiado #dzPresWrap{order:12}.dzapp.guiado #dzNav{order:13}.dzapp.guiado #dzCtl{order:14}
 .dzapp.guiado #dzTestBox{order:15}.dzapp.guiado .dzfoot{order:16}
-.dzapp.guiado:not(.mas) .dzsets,.dzapp.guiado:not(.mas) #dzPresWrap,.dzapp.guiado:not(.mas) #dzNav,.dzapp.guiado:not(.mas) #dzCtl,
-.dzapp.guiado:not(.mas) #dzTestBox,.dzapp.guiado:not(.mas) .dzfoot,.dzapp.guiado #dzSigEj,.dzapp.guiado #dzSkip{display:none!important}
+.dzapp.guiado .dzsets,.dzapp.guiado #dzPresWrap,.dzapp.guiado #dzNav,.dzapp.guiado #dzCtl,
+.dzapp.guiado #dzTestBox,.dzapp.guiado .dzfoot,.dzapp.guiado #dzSigEj,.dzapp.guiado #dzSkip{display:none!important}
+.dzapp.guiado .dzquick{display:flex;gap:8px}
+.dzapp.guiado .dzquick button{flex:1 1 0}
+.dzpausa{display:none}
+.dzapp.guiado .dzadj .dzpausa{display:flex;align-items:center;justify-content:center;gap:8px;flex:1.4;border-color:var(--amber);color:var(--amber);font-weight:800}
+.dzpausa i{display:inline-flex;gap:3px}.dzpausa i::before,.dzpausa i::after{content:"";width:4px;height:14px;border-radius:1px;background:currentColor}
+.dzapp.guiado .dzquick button{min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:4px 6px;line-height:1.15}
+.dzapp.guiado .dzquick button[disabled]{opacity:.35;cursor:default}
+.dzapp.guiado .dzquick button[hidden]{display:none}
+.dzapp.guiado .dzquick .dzpausa{display:flex;align-items:center;justify-content:center;gap:8px;border-color:var(--amber);color:var(--amber)}
+.dzapp.guiado.paused .dzquick #dzQPause{display:none}
+.dzapp.guiado.resumen .dzquick{display:none}
+/* pausa: cartel claro y botón principal «Seguir» */
+.dzapp.guiado.paused .dzahora{color:var(--amber)!important}
+.dzapp.guiado.paused .dzring .fg{stroke:var(--amber)}
+.dzapp.guiado.paused .dzstate.top{display:block!important;color:var(--amber);font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.12em;animation:dzlat 1.6s ease-in-out infinite}
+.dzapp.guiado.paused.logging .dzring{border-color:var(--amber)}
+.dzapp.guiado.paused .dztime{opacity:.4}
+.dzapp.guiado.paused #dzBar .dzmain{background:var(--amber);color:#1c191a}
+@keyframes dzlat{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.dzapp.guiado.paused .dzstate.top{animation:none}}
 .dzapp.guiado #dzBar{grid-template-columns:minmax(0,1fr)}
 .dzapp.guiado #dzBar .dzmain{font-size:24px;min-height:72px}
 .dzapp.guiado.idle .dzclock{display:none}
@@ -2617,10 +2637,6 @@ body.dzopen{overflow:hidden}
 .dzapp.guiado.working .dzahora{color:var(--amber)}
 .dzapp.guiado .dzobj{display:block;font-family:var(--display);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;margin:2px 0}
 .dzapp.guiado .dzobj:empty{display:none}
-.dzapp.guiado .dzmas{display:block;align-self:center;background:none;border:0;padding:10px 14px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.dzapp.guiado.mas .dzopts{display:flex;flex-direction:column;gap:8px}
-.dzapp.guiado .dzopts .dzbtn{min-height:52px;font-size:16px;font-weight:700}
-.dzapp.guiado.resumen .dzmas,.dzapp.guiado.resumen .dzopts{display:none!important}
 .dzapp.guiado .dzhead #dzClose{min-height:40px;font-size:14px}
 </style>
 
@@ -2697,6 +2713,7 @@ body.dzopen{overflow:hidden}
     <div class="dzadj" id="dzAdj">
       <button class="dzbtn" id="dzLess">−15"</button>
       <button class="dzbtn" id="dzSkip">Saltar descanso</button>
+      <button class="dzbtn dzpausa" id="dzAPause" type="button" aria-label="Pausar el reloj"><i aria-hidden="true"></i>Pausar</button>
       <button class="dzbtn" id="dzMore">+15"</button>
     </div>
     <div class="dzctl" id="dzCtl">
@@ -2708,9 +2725,10 @@ body.dzopen{overflow:hidden}
       <button class="dzmain" id="dzMain">Siguiente serie</button>
       <button class="dzsigej" id="dzSigEj" type="button">Siguiente ejercicio ⏭</button>
     </div>
-    <button class="dzmas" id="dzMas" type="button" aria-expanded="false">⋯ Más opciones</button>
-    <div class="dzopts" id="dzOpts">
-      <button class="dzbtn" id="dzSaltar" type="button">Saltear este ejercicio ⏭</button>
+    <div class="dzquick" id="dzQuick">
+      <button id="dzQBack" type="button">◂ Anterior</button>
+      <button id="dzQPause" class="dzpausa" type="button" aria-label="Pausar el reloj"><i aria-hidden="true"></i>Pausar</button>
+      <button id="dzQSkip" type="button">Saltear ⏭</button>
     </div>
     <div class="dzfoot">
       <button class="dzlink dzson" id="dzSon" type="button"></button>
@@ -2863,7 +2881,11 @@ function guiadoPaint(q, nx, yaHecho, sinDesc, tw, next){
   a.textContent=ah; a.classList.toggle("ok",ok);
   $("dzExPos").textContent=pos;
   ob.textContent = yaHecho||S.mode==="finished" ? "" : sinDesc ? (q.series>1?q.series+" × ":"")+repsSerie(q,0) : repsSerie(q, Math.min(S.done, tot-1));
-  const sal=$("dzSaltar"), se=$("dzSigEj"); sal.hidden=se.hidden; sal.textContent=se.textContent.replace("Siguiente ejercicio","Saltear este ejercicio");
+  const se=$("dzSigEj"), qs=$("dzQSkip"), qb=$("dzQBack"), qp=$("dzQPause"), corre=S.mode==="rest"||S.mode==="work";
+  qs.hidden=se.hidden; qs.textContent=/Terminar/.test(se.textContent)?"Terminar ✓":/pendiente/.test(se.textContent)?"Al pendiente ⏭":"Saltear ⏭";
+  qb.disabled=$("dzBack").disabled; qb.textContent=S.done>0?"◂ Serie anterior":"◂ Anterior";
+  qp.hidden=S.mode!=="work"||!!S.paused;
+  if(S.paused){ a.textContent="En pausa · tocá Seguir cuando quieras"; a.classList.remove("ok"); }
   const nt=$("dzNext");
   if(S.mode==="rest" && S.justChanged && S.prevQ) nt.textContent="Cuando termine el descanso arrancás con este ejercicio.";
 }
@@ -2921,6 +2943,7 @@ function render(){
     else if(S.mode==="idle" && !tw && !sinDesc) m.textContent="✓ Terminé la serie "+next;
     else if(S.mode==="idle" && sinDesc) m.textContent=nx?"✓ Listo · siguiente ejercicio":"✓ Listo · terminar";
   }
+  if(S.entreno && S.paused && !S.resumen) m.textContent="▶ Seguir";
   navPaint(nx);
   const fab=$("dzFab");
   /* en modo edición la barra de Guardar ocupa el borde de abajo: el botón flotante se esconde */
@@ -2988,6 +3011,7 @@ function empezarTrabajo(){
   S.wLen=w; S.wEnd=Date.now()+w*1000; S.wRest = S.done+1>=S.total && sigIdx()<0 ? 0 : S.rest; S.mode="work"; presets(); lastBeep=null; pistaPlay(); render();
 }
 $("dzMain").onclick=()=>{
+  if(S.entreno && S.paused){ $("dzPause").click(); return; } /* en pausa, el botón grande reanuda */
   audio(); awake(); despausar();
   if(S.mode==="finished" && S.porCerrar){ S.porCerrar=false; S.log=null; logPaint(true); terminarEntreno(); return; }
   if(S.mode==="finished"){ if(S.queue.length){ S.queue=[]; S.idx=0; S.entreno=false; S.resumen=null; $("dzFin").hidden=true; mapPaint(); close(); } S.done=0; S.mode="idle"; render(); return; }
@@ -3201,10 +3225,10 @@ $("dzRestart").onclick=()=>{ audio(); awake();
   const len=S.rest||S.len||60;
   S.paused=false; S.len=len; S.endAt=Date.now()+len*1000; S.mode="rest"; lastBeep=null; presets(); pistaPlay(); render();
 };
-$("dzMas").onclick=()=>{ const a=$("dzApp"), on=!a.classList.contains("mas"); a.classList.toggle("mas",on);
-  $("dzMas").setAttribute("aria-expanded",String(on)); $("dzMas").textContent=on?"Ocultar opciones":"⋯ Más opciones";
-  if(on) requestAnimationFrame(()=>{ try{ $("dzMas").scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){} }); };
-$("dzSaltar").onclick=()=>$("dzSigEj").click();
+$("dzQBack").onclick=()=>$("dzBack").click();
+$("dzQSkip").onclick=()=>$("dzSigEj").click();
+$("dzQPause").onclick=()=>$("dzPause").click();
+$("dzAPause").onclick=()=>$("dzPause").click();
 presets(); render();
 })();
 </script>
