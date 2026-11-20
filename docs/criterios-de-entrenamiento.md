@@ -8,6 +8,12 @@ Cuando dos criterios choquen, manda el de Ramiro (sección 1). Lo de Anselmi se 
 
 ## 1. Criterios propios de Ramiro (no cambian sin que él lo diga)
 
+- **División fija (siempre, para todos):** cada día de entreno es UNA de estas tres combinaciones, y quien entrena más días las repite en el mismo orden:
+  1. **Pierna:** cuádriceps, isquiotibiales, gemelos y sóleos (con aductores y abductores).
+  2. **Pecho:** pectorales, hombros, tríceps y abdominales.
+  3. **Espalda:** dorsales, lumbares, bíceps y antebrazos.
+
+  Una lesión o una limitación cambia los ejercicios, nunca la división (ej.: Inés hace cuádriceps sin flexión, pero el viernes sigue siendo día de pierna). Nada de días "cuerpo completo", "torso" o "hombros y brazos".
 - **Orden de cada día:** Movilidad → Activación / core liviano → Aproximación ("Series de aproximación: <primer ejercicio con registro>") → bloques de trabajo → core al final → cardio del final, si hay. **Sin cardio de entrada en calor**: nada de bici ni cinta al inicio.
 - **Tempo** = bajada-pausa-subida, con énfasis en la excéntrica (ej. 3-0-1). Cada ejercicio lleva su explicación de técnica, coherente con el tempo, y un video (búsqueda de YouTube `como hacer ... tecnica`).
 - **Volumen:** 8 a 10 series por grupo muscular por sesión. No repetir dos variantes del mismo movimiento en una sesión. El día de piernas es completo (aductores, abductores, isquios y cuádriceps).
