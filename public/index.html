@@ -1016,7 +1016,7 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
-const VERSION_APP="19/11/2026 18:25";
+const VERSION_APP="22/11/2026 14:45";
 /* actualización automática: al volver a la app (y cada 10 min) se fija si hay una versión publicada más nueva.
    Si la hay, recarga sola, salvo en medio de un entreno o mientras se escribe/edita: ahí espera. */
 (function(){
@@ -1554,10 +1554,13 @@ function queueSes(k, di, mut, status){
   clearTimeout(timer); timer=setTimeout(()=>flush(status),700);
 }
 function prevSes(di, key, antesDe){
-  const all=S.ses[S.cid]||{}; let best=null;
-  for (const v of Object.values(all)) if (v && v.dia===di && v.fecha<antesDe && (v.ej||{})[key] && v.ej[key].some(x=>x&&(x.kg||x.r)))
-    if (!best || v.fecha>best.fecha) best=v;
-  return best;
+  /* la última vez que hizo ese ejercicio: primero en el mismo día de la rutina; si no (cambió de día en un ciclo nuevo), en cualquiera */
+  const all=S.ses[S.cid]||{}; let best=null, otro=null;
+  for (const v of Object.values(all)) if (v && v.fecha<antesDe && (v.ej||{})[key] && v.ej[key].some(x=>x&&(x.kg||x.r))){
+    if (v.dia===di){ if (!best || v.fecha>best.fecha) best=v; }
+    else if (!otro || v.fecha>otro.fecha) otro=v;
+  }
+  return best || otro;
 }
 const setTxt = a => (a||[]).filter(x=>x&&(x.kg||x.r)).map(x=>(x.kg||"–")+" kg × "+(x.r||"–")).join(" · ");
 async function flush(status){
