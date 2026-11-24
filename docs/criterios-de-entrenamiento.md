@@ -16,13 +16,14 @@ Cuando dos criterios choquen, manda el de Ramiro (sección 1). Lo de Anselmi se 
   Una lesión o una limitación cambia los ejercicios, nunca la división (ej.: Inés hace cuádriceps sin flexión, pero el viernes sigue siendo día de pierna). Nada de días "cuerpo completo", "torso" o "hombros y brazos".
 - **Orden de cada día:** Movilidad → Activación / core liviano → Aproximación ("Series de aproximación: <primer ejercicio con registro>") → bloques de trabajo → core al final → cardio del final, si hay. **Sin cardio de entrada en calor**: nada de bici ni cinta al inicio.
 - **Tempo** = bajada-pausa-subida, con énfasis en la excéntrica (ej. 3-0-1). Cada ejercicio lleva su explicación de técnica, coherente con el tempo, y un video (búsqueda de YouTube `como hacer ... tecnica`).
+- **Descansos (desde el 24/11/2026):** nunca más de 90". Básicos pesados, 60 a 90". Aislamiento, core y gemelos, 40 a 45" (los que ya están así no se tocan).
 - **Volumen:** 8 a 10 series por grupo muscular por sesión. No repetir dos variantes del mismo movimiento en una sesión. El día de piernas es completo (aductores, abductores, isquios y cuádriceps).
 - **División por nivel:** principiantes, cuerpo completo 2 o 3 veces por semana. Intermedios, torso-pierna o empuje-tirón-pierna de 4 días. Avanzados, por grupo muscular, 5 o 6 días.
 - **Microciclo de hipertrofia (frecuencia 2):** lunes y jueves cuádriceps, isquios, gemelos y sóleos. Martes y viernes pecho, hombros, tríceps y abdomen. Miércoles y sábado dorsales, lumbares, bíceps y antebrazos.
 - **Cinco grandes de fuerza:** remo acostado en banco con barra, dominadas supinas con agarre cerrado, sentadilla trasera con apertura amplia, press de banca con agarre amplio, press militar sentado.
 - **Periodización:** alternar 1 mes de fuerza y 1 de hipertrofia en quien puede (sin lesiones).
 - **Ciclo terminado:** el ciclo siguiente cambia el **estímulo** con las repeticiones, nunca los ejercicios (mismas series y tempos).
-  - Después de hipertrofia en rangos medios viene fuerza-hipertrofia: el primer básico va en 6-8 reps con 120" de descanso, los otros básicos en 8-10 (mínimo 90") y el aislamiento sube un rango.
+  - Después de hipertrofia en rangos medios viene fuerza-hipertrofia: el primer básico va en 6-8 reps con 90" de descanso, los otros básicos en 8-10 (60 a 90") y el aislamiento sube un rango.
   - Después de fuerza-hipertrofia se vuelve a básicos en 10-12 y aislamiento en 12-15.
   - Con lesión, nunca menos de 8 reps.
   - Última semana: descarga, con las mismas cargas y la mitad de las series.
