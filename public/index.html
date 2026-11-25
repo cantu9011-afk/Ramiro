@@ -898,7 +898,7 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
-const VERSION_APP="25/11/2026 11:46";
+const VERSION_APP="25/11/2026 18:09";
 /* actualización automática: al volver a la app (y cada 10 min) se fija si hay una versión publicada más nueva.
    Si la hay, recarga sola, salvo en medio de un entreno o mientras se escribe/edita: ahí espera. */
 (function(){
@@ -2964,7 +2964,7 @@ function render(){
   app.classList.toggle("resumen",!!S.resumen);
   $("dzHead").textContent=S.entreno?"Entreno de hoy":"Descansos y series";
   $("dzOkEx").hidden=!(q&&q.anota&&S.mode!=="work"&&S.mode!=="finished");
-  const yaHecho=!!(q&&S.fin&&S.fin[S.idx]&&S.mode==="idle");
+  const yaHecho=!!(q&&S.fin&&S.fin[S.idx]&&S.mode!=="work"&&S.mode!=="finished"); /* también si volviste a un ejercicio terminado durante un descanso */
   const sinDesc=q&&!q.rest&&!tw&&S.mode!=="finished"&&!yaHecho;
   if(sinDesc&&S.mode!=="rest"){ $("dzState").textContent=q.registro?"Listo":"Sin descanso"; $("dzSub").textContent=q.series+" × "+q.reps; $("dzTime").textContent="✓"; }
   $("dzReset").textContent=S.queue.length?"Usar reloj libre":"Nuevo ejercicio";
@@ -3057,6 +3057,8 @@ $("dzMain").onclick=()=>{
   if(S.mode==="finished" && S.porCerrar){ S.porCerrar=false; S.log=null; logPaint(true); terminarEntreno(); return; }
   if(S.mode==="finished"){ if(S.queue.length){ S.queue=[]; S.idx=0; S.entreno=false; S.resumen=null; $("dzFin").hidden=true; mapPaint(); close(); } S.done=0; S.mode="idle"; render(); return; }
   if(S.mode==="work"){ cerrarSerie(Date.now(), S.rest, true); return; }
+  /* volviste a un ejercicio ya terminado (por ejemplo, para anotar una serie): el botón lleva al siguiente pendiente, sin cortar el descanso */
+  if(S.entreno && S.fin && S.fin[S.idx] && (S.mode==="rest"||S.mode==="ready")){ const n=sigIdx(); if(n<0) terminarEntreno(); else { cargar(n); S.justChanged=false; logPaint(false); render(); } return; }
   if(S.entreno && S.mode==="rest"){ S.paused=false; S.mode="ready"; pistaStop(); presets();
     if(trabajoAct()){ empezarTrabajo(); return; } /* ejercicio por tiempo: corta el descanso y arranca la serie */
     render(); return; }
