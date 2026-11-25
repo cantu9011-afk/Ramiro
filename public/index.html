@@ -828,6 +828,7 @@ function irAlumnos(){
   if (cid){ S.diaAuto=true; return go("cliente",{cid,tab:S.tab||"rutina"}); }
   go("picker",{cid:null});
 }
+window.irAlumnos = irAlumnos;   /* el conector la usa si tocás «Ingresar» con la sesión ya abierta */
 function viewInicio(){
   const cta=t=>h("button",{class:"in-cta",type:"button",onclick:irAlumnos}, h("span",{text:t}), h("b",{"aria-hidden":"true",text:"→"}));
   const ctaTxt = S.owner ? "Entrar a mis alumnos" : (S.miCid ? "Ver mi plan" : "Ingresar");
@@ -897,7 +898,7 @@ function cicloAviso(c){
   if (sem>=Math.min(6,n)) return {fin:false, txt:"Semana "+sem+" de "+n+" · revisar rutina"};
   return null;
 }
-const VERSION_APP="23/11/2026 20:54";
+const VERSION_APP="25/11/2026 11:46";
 /* actualización automática: al volver a la app (y cada 10 min) se fija si hay una versión publicada más nueva.
    Si la hay, recarga sola, salvo en medio de un entreno o mientras se escribe/edita: ahí espera. */
 (function(){

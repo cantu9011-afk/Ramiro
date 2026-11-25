@@ -38,6 +38,10 @@ Marca: "RAMIRO CANTÚ: Entrenamientos personalizados", rojo, negro y blanco (nad
 - El **contexto privado completo** (alumnos, cobros, pendientes, recordatorios) está en Firestore `privado/contexto` (campo `claudeMd`), solo accesible con credenciales de administrador del proyecto. Ramiro también tiene una copia en su compu.
 - Commits chicos con mensajes en español.
 
+## Ciclos nuevos
+
+Al empezar un ciclo nuevo (cambia `fechaInicio`), cargá antes `fechaAlta` si el alumno no la tiene: los vencimientos de las cuotas usan `fechaAlta` y, si falta, `fechaInicio`, así que sin ella el día de cobro se corre. El ciclo anterior va a `ciclos` y `semLabels` arranca el lunes del ciclo.
+
 ## Publicar
 
 `npm run publicar`: arma el conector, marca la versión (fecha y hora en `VERSION_APP` y `public/version.json`) y sube el sitio. La página compara su versión con `version.json` al volver a abrirse y se recarga sola (nunca en medio de un entreno ni con el editor abierto). Ver la versión al pie de la portada.

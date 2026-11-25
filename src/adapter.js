@@ -113,6 +113,7 @@ const listo = new Promise(res => {
     // cambió la sesión (entró o salió): se recarga para arrancar limpio con los permisos nuevos
     if (creando) return;
     if ((u && u.uid) !== (current && current.uid)) location.reload();
+    else if (u) yaAdentro();   // entró con la misma cuenta que ya estaba abierta: solo se cierra el cartel
   });
 });
 
@@ -204,8 +205,25 @@ function cerrar() { if (modal) { modal.remove(); modal = null; document.removeEv
 function esc(ev) { if (ev.key === "Escape") cerrar(); }
 function volverA(v) { try { if (v) sessionStorage.setItem("rc-volver", v); } catch (e) {} }
 
-function ingresar(volver) {
+/* Ya hay sesión: se cierra el cartel y, si venía de «Entrar a mis alumnos», se sigue hasta ahí
+   cuando la app termina de cargar (antes de eso el botón todavía dice «Ingresar»). */
+function yaAdentro(volver) {
+  cerrar();
+  let v = volver; try { v = v || sessionStorage.getItem("rc-volver"); sessionStorage.removeItem("rc-volver"); } catch (e) {}
+  if (v !== "picker") return;
+  let n = 0;
+  const t = setInterval(() => {
+    const a = window.__app;
+    if (a && a.uid && typeof window.irAlumnos === "function") { clearInterval(t); if (a.view === "inicio") window.irAlumnos(); }
+    else if (++n > 50) clearInterval(t);
+  }, 200);
+}
+
+async function ingresar(volver) {
   if (!configurado) { alert("Falta configurar Firebase (archivo config.js)."); return; }
+  if (modal) return;
+  const ya = await listo;            // la sesión guardada todavía se estaba leyendo
+  if (ya) return yaAdentro(volver);
   if (modal) return;
   volverA(volver);
   let modo = "entrar";
@@ -238,7 +256,10 @@ function ingresar(volver) {
     const p = new GoogleAuthProvider();
     p.setCustomParameters({ prompt: "select_account" });
     msg.textContent = "";
-    try { await signInWithPopup(auth, p); msg.className = "rc-msg ok"; msg.textContent = "Entrando…"; }
+    try {
+      await signInWithPopup(auth, p); msg.className = "rc-msg ok"; msg.textContent = "Entrando…";
+      if (current && auth.currentUser && auth.currentUser.uid === current.uid) yaAdentro();
+    }
     catch (e) {
       if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) return signInWithRedirect(auth, p);
       if (e && (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request")) return;
@@ -264,6 +285,7 @@ function ingresar(volver) {
         location.reload();
       } else {
         await signInWithEmailAndPassword(auth, em, pw);
+        if (current && auth.currentUser && auth.currentUser.uid === current.uid) yaAdentro();
       }
     } catch (e) { creando = false; msg.textContent = msgDe(e); enviar.disabled = false; }
   });
